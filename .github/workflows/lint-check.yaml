@@ -17,8 +17,11 @@ jobs:
       - name: Install all dependencies
         run: npm ci
 
-      - name: Lint check (all file)
-        run: npm run lint:check
+      - name: Lint check (frontend)
+        run: npx nx lint frontend
+
+      - name: Lint check (backend)
+        run: npx nx lint backend
 
       - name: Format check (all file)
-        run: npm run format:check
+        run: npx nx format:check --all
