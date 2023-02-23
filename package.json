@@ -9,10 +9,10 @@
     "@nestjs/testing": "^9.0.0",
     "@nrwl/cypress": "^15.7.2",
     "@nrwl/eslint-plugin-nx": "15.7.2",
+    "@nrwl/express": "^15.7.2",
     "@nrwl/jest": "15.7.2",
     "@nrwl/js": "15.7.2",
     "@nrwl/linter": "15.7.2",
-    "@nrwl/nest": "^15.7.2",
     "@nrwl/node": "15.7.2",
     "@nrwl/react": "^15.7.2",
     "@nrwl/vite": "^15.7.2",
@@ -20,6 +20,7 @@
     "@nrwl/workspace": "15.7.2",
     "@swc/core": "^1.2.173",
     "@testing-library/react": "13.4.0",
+    "@types/express": "4.17.13",
     "@types/jest": "28.1.1",
     "@types/node": "18.11.9",
     "@types/react": "18.0.25",
@@ -58,16 +59,11 @@
     "vitest": "^0.25.8"
   },
   "dependencies": {
-    "@nestjs/common": "^9.0.0",
-    "@nestjs/core": "^9.0.0",
-    "@nestjs/platform-express": "^9.0.0",
-    "axios": "^1.0.0",
+    "express": "^4.18.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-icons": "^4.7.1",
     "react-router-dom": "6.4.3",
-    "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.0.0",
     "tslib": "^2.3.0"
   }
 }
