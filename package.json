@@ -2,7 +2,10 @@
   "name": "dadn-chill",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "lint": "npx nx lint frontend; npx nx lint backend",
+    "format": "npx nx format:write --all"
+  },
   "private": true,
   "devDependencies": {
     "@nestjs/schematics": "^9.0.0",
