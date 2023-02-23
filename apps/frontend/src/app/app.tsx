@@ -9,7 +9,7 @@ import HomePage from '../pages/HomePage';
 
 export function App() {
   return (
-    <div className='flex flex-col h-screen'>
+    <div className="flex h-screen flex-col">
       <Navbar />
       {/* <br />
       <div role="navigation">
