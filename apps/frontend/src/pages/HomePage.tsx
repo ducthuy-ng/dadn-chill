@@ -1,15 +1,12 @@
-import { useEffect, useState } from 'react';
-import Map, { convertDevice } from '../components/Map';
+import { useCallback, useEffect, useState } from 'react';
+import MapEngine, { convertDevice, DisplayPosition } from '../components/Map';
 import { FaCaretLeft, FaCaretRight, FaEye } from 'react-icons/fa';
 import { LatLngExpression } from 'leaflet';
 
-convertDevice({ id: 'abc', connected: false, lat: 12, lng: 10 })
-
-
 interface SensorData {
-  id: number;
+  id: string;
   name: string;
-  isOnline: boolean;
+  connected: boolean;
   temperature: number;
   humidity: number;
   lux: number;
@@ -20,59 +17,59 @@ interface SensorData {
 
 const sensorDummyData: SensorData[] = [
   {
-    id: 1,
+    id: 'sensor-001',
     name: 'Cảm biến 1',
-    isOnline: true,
+    connected: true,
     temperature: 1,
     humidity: 1,
     lux: 1,
     windSpeed: 1,
 
-    location: [ 10.552493,106.873474 ],
+    location: [10.552493, 106.873474],
   },
   {
-    id: 2,
+    id: 'sensor-002',
     name: 'Cảm biến 2',
-    isOnline: false,
+    connected: false,
     temperature: 1,
     humidity: 1,
     lux: 1,
     windSpeed: 1,
 
-    location: [ 10.5390624, 106.879069 ],
+    location: [10.5390624, 106.879069],
   },
   {
-    id: 3,
+    id: 'sensor-003',
     name: 'Cảm biến 3',
-    isOnline: false,
+    connected: false,
     temperature: 1,
     humidity: 1,
     lux: 1,
     windSpeed: 1,
 
-    location: [ 10.5257651, 106.8480182 ],
+    location: [10.5257651, 106.8480182],
   },
   {
-    id: 4,
+    id: 'sensor-004',
     name: 'Cảm biến 4',
-    isOnline: true,
+    connected: true,
     temperature: 1,
     humidity: 1,
     lux: 1,
     windSpeed: 1,
 
-    location: [ 10.5122799, 106.7979179 ],
+    location: [10.5122799, 106.7979179],
   },
   {
-    id: 5,
+    id: 'sensor-005',
     name: 'Cảm biến 5',
-    isOnline: true,
+    connected: true,
     temperature: 1,
     humidity: 1,
     lux: 1,
     windSpeed: 1,
 
-    location: [ 10.478189, 106.839396 ],
+    location: [10.478189, 106.839396],
   },
   // {
   //   id: 6,
@@ -131,15 +128,21 @@ const sensorDummyData: SensorData[] = [
   // },
 ];
 
-export default function HomePage() {
-  const [selectedId, SetSelectedId] = useState('');
 
+
+
+export default function HomePage() {
+  const [selectedId, setSelectedId] = useState('');
   useEffect(() => console.log(selectedId), [selectedId]);
+  const [map, setMap] = useState<any>(null);
+
+  const [position, setPosition] = useState(() => map.getCenter())
+
 
   return (
     <div className="flex-grow p-2">
       <div className="grid h-full grid-cols-5 gap-2">
-        <div className="col-span-3 flex flex-col mx-1">
+        <div className="col-span-3 mx-1 flex flex-col">
           <h1 className="m-4 text-3xl font-bold">Cảm biến</h1>
           <table className="w-full table-auto border-collapse">
             <thead>
@@ -158,12 +161,13 @@ export default function HomePage() {
                 <tr
                   key={sensorData.id}
                   className="cursor-pointer border-b-2 hover:bg-gray-100"
+                  onClick={() => setPosition(sensorData.id)}
                 >
                   <td className="py-2 text-center">{sensorData.name}</td>
                   <td className="py-2 text-center">
                     <span
                       className={`text- inline-block h-4  w-4 rounded-full  align-middle ${
-                        sensorData.isOnline ? 'bg-green-500' : 'bg-red-500'
+                        sensorData.connected ? 'bg-green-500' : 'bg-red-500'
                       }`}
                     ></span>
                   </td>
@@ -189,26 +193,21 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-        <div className="col-span-2 h-full rounded-md border mx-1">
-          <Map
+        <div className="col-span-2 mx-1 h-full rounded-md border">
+        {map ? <DisplayPosition map={map} /> : null}
+          <MapEngine
             selectedId={selectedId}
-            setSelectedId={SetSelectedId}
-            data={[
-              {
-                id: 'sensor-005',
-                connected: true,
-                lat: 10.478189,
-                lng: 106.839396,
-              },
-            ].map((el) =>
+            setSelectedId={setSelectedId}
+            setMap={setMap}
+            data={sensorDummyData.map((el) =>
               convertDevice({
                 id: el.id,
                 connected: el.connected,
-                lat: el.lat,
-                lng: el.lng,
+                location: el.location,
               })
             )}
           />
+          {map ? <DisplayPosition map={map} /> : null}
         </div>
       </div>
     </div>
