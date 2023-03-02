@@ -4,7 +4,7 @@ import {
   MapContainer,
   TileLayer,
   Tooltip,
-  useMap
+  useMap,
 } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useCallback, useEffect, useState } from 'react';
@@ -36,9 +36,6 @@ export const convertDevice = (object: any): DeviceLocation => {
   };
 };
 
-
-
-
 export default function MapEngine(props: MapProps) {
   // mapdata
   const position = { lat: 10.5082062, lng: 106.8602405 };
@@ -48,10 +45,13 @@ export default function MapEngine(props: MapProps) {
   const data = props.data;
 
   return (
-    
-    <MapContainer center={position} zoom={zoom} ref={props.setMap} className={props.className}>
+    <MapContainer
+      center={position}
+      zoom={zoom}
+      ref={props.setMap}
+      className={props.className}
+    >
       <TileLayer attribution={TILE_LAYER_ATTRIBUTION} url={TILE_LAYER_URL} />
-
 
       {data.map((item) => (
         <Circle

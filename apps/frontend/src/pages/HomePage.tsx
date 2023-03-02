@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import MapEngine, { convertDevice } from '../components/Map';
 import { FaCaretLeft, FaCaretRight, FaEye } from 'react-icons/fa';
 import { LatLngExpression, Map } from 'leaflet';
@@ -85,35 +85,41 @@ const sensorDummyData: SensorData[] = [
 ];
 
 interface DisplayPositionProps {
-  map: Map
+  map: Map;
 }
 
-export function DisplayPosition({map} : DisplayPositionProps) {
-  const center = map.getCenter()
-  const zoom = map.getZoom()
-  const [position, setPosition] = useState(() => map.getCenter())
+export function DisplayPosition({ map }: DisplayPositionProps) {
+  const center = map.getCenter();
+  const zoom = map.getZoom();
+  const [position, setPosition] = useState(() => map.getCenter());
 
   const onClick = useCallback(() => {
-    map.setView(center, zoom)
-  }, [map])
+    map.setView(center, zoom);
+  }, [map]);
 
   const onMove = useCallback(() => {
-    setPosition(map.getCenter())
-  }, [map])
+    setPosition(map.getCenter());
+  }, [map]);
 
   useEffect(() => {
-    map.on('move', onMove)
+    map.on('move', onMove);
     return () => {
-      map.off('move', onMove)
-    }
-  }, [map, onMove])
+      map.off('move', onMove);
+    };
+  }, [map, onMove]);
 
   return (
-    <div className="p-4 z-50 absolute top-0 right-0 text-sm text-blue-800 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400" role="alert">
-      <span className="font-medium">latitude: {position.lat.toFixed(4)}, longitude: {position.lng.toFixed(4)}{' '}</span>
+    <div
+      className="absolute top-0 right-0 z-50 rounded-lg bg-blue-50 p-4 text-sm text-blue-800 dark:bg-gray-800 dark:text-blue-400"
+      role="alert"
+    >
+      <span className="font-medium">
+        latitude: {position.lat.toFixed(4)}, longitude:{' '}
+        {position.lng.toFixed(4)}{' '}
+      </span>
       <button onClick={onClick}>reset</button>
     </div>
-  )
+  );
 }
 
 export default function HomePage() {
@@ -122,11 +128,9 @@ export default function HomePage() {
   const zoom = 13;
 
   const handleClickOnMap = (position: LatLngExpression): void => {
-    map.setView(position, zoom)
-    setMap(map)
-  }
-    
-
+    map.setView(position, zoom);
+    setMap(map);
+  };
 
   return (
     <div className="flex-grow p-2">
@@ -150,7 +154,7 @@ export default function HomePage() {
                 <tr
                   key={sensorData.id}
                   className="cursor-pointer border-b-2 hover:bg-gray-100"
-                  onClick={() => handleClickOnMap(sensorData.location) }
+                  onClick={() => handleClickOnMap(sensorData.location)}
                 >
                   <td className="py-2 text-center">{sensorData.name}</td>
                   <td className="py-2 text-center">
@@ -182,10 +186,9 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-        <div className="col-span-2 mx-1 h-full rounded-md relative">
-          
+        <div className="relative col-span-2 mx-1 h-full rounded-md">
           <MapEngine
-            className='z-0 h-full'
+            className="z-0 h-full"
             selectedId={selectedId}
             setSelectedId={setSelectedId}
             setMap={setMap}
