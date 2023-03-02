@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
-import MapEngine, { convertDevice, DisplayPosition } from '../components/Map';
+import { useState, useCallback, useEffect, } from 'react';
+import MapEngine, { convertDevice } from '../components/Map';
 import { FaCaretLeft, FaCaretRight, FaEye } from 'react-icons/fa';
-import { LatLngExpression } from 'leaflet';
+import { LatLngExpression, Map } from 'leaflet';
 
 interface SensorData {
   id: string;
@@ -71,62 +71,50 @@ const sensorDummyData: SensorData[] = [
 
     location: [10.478189, 106.839396],
   },
-  // {
-  //   id: 6,
-  //   name: 'Cảm biến 2',
-  //   isOnline: false,
-  //   temperature: 1,
-  //   humidity: 1,
-  //   lux: 1,
-  //   windSpeed: 1,
+  {
+    id: 'sensor-006',
+    name: 'Cảm biến 6',
+    connected: false,
+    temperature: 2,
+    humidity: 3,
+    lux: 1,
+    windSpeed: 0,
 
-  //   location: [],
-  // },
-  // {
-  //   id: 7,
-  //   name: 'Cảm biến 3',
-  //   isOnline: false,
-  //   temperature: 1,
-  //   humidity: 1,
-  //   lux: 1,
-  //   windSpeed: 1,
-
-  //   location: [],
-  // },
-  // {
-  //   id: 8,
-  //   name: 'Cảm biến 4',
-  //   isOnline: true,
-  //   temperature: 1,
-  //   humidity: 1,
-  //   lux: 1,
-  //   windSpeed: 1,
-
-  //   location: [],
-  // },
-  // {
-  //   id: 9,
-  //   name: 'Cảm biến 3',
-  //   isOnline: false,
-  //   temperature: 1,
-  //   humidity: 1,
-  //   lux: 1,
-  //   windSpeed: 1,
-
-  //   location: [],
-  // },
-  // {
-  //   id: 10,
-  //   name: 'Cảm biến 4',
-  //   isOnline: true,
-  //   temperature: 1,
-  //   humidity: 1,
-  //   lux: 1,
-  //   windSpeed: 1,
-
-  //   location: [],
-  // },
+    location: [10.4792, 106.8984],
+  },
 ];
+
+interface DisplayPositionProps {
+  map: Map
+}
+
+export function DisplayPosition({map} : DisplayPositionProps) {
+  const center = map.getCenter()
+  const zoom = map.getZoom()
+  const [position, setPosition] = useState(() => map.getCenter())
+
+  const onClick = useCallback(() => {
+    map.setView(center, zoom)
+  }, [map])
+
+  const onMove = useCallback(() => {
+    setPosition(map.getCenter())
+  }, [map])
+
+  useEffect(() => {
+    map.on('move', onMove)
+    return () => {
+      map.off('move', onMove)
+    }
+  }, [map, onMove])
+
+  return (
+    <div className="p-4 z-50 absolute top-0 right-0 text-sm text-blue-800 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400" role="alert">
+      <span className="font-medium">latitude: {position.lat.toFixed(4)}, longitude: {position.lng.toFixed(4)}{' '}</span>
+      <button onClick={onClick}>reset</button>
+    </div>
+  )
+}
 
 export default function HomePage() {
   const [selectedId, setSelectedId] = useState('');
@@ -194,8 +182,10 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-        <div className="col-span-2 mx-1 h-full rounded-md">
+        <div className="col-span-2 mx-1 h-full rounded-md relative">
+          
           <MapEngine
+            className='z-0 h-full'
             selectedId={selectedId}
             setSelectedId={setSelectedId}
             setMap={setMap}
