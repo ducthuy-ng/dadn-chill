@@ -3,11 +3,14 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "setup:dev": "npm i",
-    "dev": "npx nx serve frontend",
+    "setup:dev": "sh -c './bin/setup-dev.sh'",
+    "dev:frontend": "",
+    "dev:backend": "sh -c './bin/start-dev-backend.sh'",
+    "stop:frontend": "",
+    "stop:backend": "sh -c './bin/stop-dev-backend.sh'",
     "lint": "npx nx lint frontend; npx nx lint backend",
     "format": "npx nx format:write --all",
-    "clean:dev": "rm -rf node_modules"
+    "clean:dev": "sh -c './bin/clean-dev.sh'"
   },
   "private": true,
   "devDependencies": {
