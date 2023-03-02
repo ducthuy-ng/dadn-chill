@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "setup:dev": "sh -c './bin/setup-dev.sh'",
-    "dev:frontend": "",
+    "dev:frontend": "npx nx serve frontend",
     "dev:backend": "sh -c './bin/start-dev-backend.sh'",
     "stop:frontend": "",
     "stop:backend": "sh -c './bin/stop-dev-backend.sh'",

@@ -86,11 +86,11 @@ export default function NotificationsPage() {
 
   return (
     <div className="p-4">
-      <Link to={'/'}>
-        <div className="flex items-center gap-x-1 hover:text-blue-500">
+      <Link to={'/'} className="inline-block">
+        <span className="flex items-center gap-x-1 hover:text-blue-500">
           <FaArrowLeft className="text-xl" />
           <div>Quay về trang chủ</div>
-        </div>
+        </span>
       </Link>
 
       <h1 className="my-4 text-4xl">Thông báo đã nhận</h1>
