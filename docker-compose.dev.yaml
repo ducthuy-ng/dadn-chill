@@ -1,6 +1,15 @@
 version: '3.8'
 
 services:
+  postgres:
+    image: postgres:15.2-alpine3.17
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-volume:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=backend
+      - POSTGRES_PASSWORD=password
   kafka1:
     image: bitnami/kafka:3.4.0
     ports:
@@ -27,7 +36,7 @@ services:
 
 volumes:
   kafka-volume:
-
+  postgres-volume:
 
 networks:
   kafka-network:
