@@ -128,15 +128,16 @@ const sensorDummyData: SensorData[] = [
   // },
 ];
 
-
-
-
 export default function HomePage() {
   const [selectedId, setSelectedId] = useState('');
-  useEffect(() => console.log(selectedId), [selectedId]);
   const [map, setMap] = useState<any>(null);
+  const zoom = 13;
 
-  const [position, setPosition] = useState(() => map.getCenter())
+  const handleClickOnMap = (position: LatLngExpression): void => {
+    map.setView(position, zoom)
+    setMap(map)
+  }
+    
 
 
   return (
@@ -161,7 +162,7 @@ export default function HomePage() {
                 <tr
                   key={sensorData.id}
                   className="cursor-pointer border-b-2 hover:bg-gray-100"
-                  onClick={() => setPosition(sensorData.id)}
+                  onClick={() => handleClickOnMap(sensorData.location) }
                 >
                   <td className="py-2 text-center">{sensorData.name}</td>
                   <td className="py-2 text-center">
@@ -193,8 +194,7 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-        <div className="col-span-2 mx-1 h-full rounded-md border">
-        {map ? <DisplayPosition map={map} /> : null}
+        <div className="col-span-2 mx-1 h-full rounded-md">
           <MapEngine
             selectedId={selectedId}
             setSelectedId={setSelectedId}

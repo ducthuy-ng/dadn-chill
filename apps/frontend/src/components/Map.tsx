@@ -59,10 +59,10 @@ export function DisplayPosition({map} : DisplayPositionProps) {
   }, [map, onMove])
 
   return (
-    <p>
+    <span className='float-left'>
       latitude: {position.lat.toFixed(4)}, longitude: {position.lng.toFixed(4)}{' '}
       <button onClick={onClick}>reset</button>
-    </p>
+    </span>
   )
 }
 
