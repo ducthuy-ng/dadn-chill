@@ -3,9 +3,11 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
+    "setup:dev": "npm i",
+    "dev": "npx nx serve frontend",
     "lint": "npx nx lint frontend; npx nx lint backend",
     "format": "npx nx format:write --all",
-    "dev": "npx nx serve frontend"
+    "clean:dev": "rm -rf node_modules"
   },
   "private": true,
   "devDependencies": {
@@ -69,7 +71,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.7.1",
-    "react-leaflet": "^4.2.0",
+    "react-leaflet": "^4.2.1",
     "react-router-dom": "6.4.3",
     "tslib": "^2.3.0"
   }
