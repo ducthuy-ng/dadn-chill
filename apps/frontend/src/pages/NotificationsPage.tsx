@@ -1,88 +1,110 @@
+import { createContext, useState } from 'react';
 import { FaArrowLeft } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-
-interface Notification {
-  id: number;
-  content: string;
-}
+import { NotificationItem } from '../components/NotificationItem';
+import { Notification } from '../core/Notification';
 
 function fetchAllNotifications(): Notification[] {
   return [
     {
       id: 1,
-      content: 'Thông báo 1',
+      sensor_name: 'Sensor 1',
+      header: 'Thông báo chung',
+      content: 'Thông báo 1\n Xin chaof \nabcd',
     },
     {
       id: 2,
+      sensor_name: 'Sensor 1',
+      header: 'Thông báo chung',
       content: 'Thông báo 2',
     },
     {
       id: 3,
+      sensor_name: 'Sensor 1',
+      header: 'Thông báo chung',
       content: 'Thông báo 1',
     },
     {
       id: 4,
+      sensor_name: 'Sensor 1',
+      header: 'Thông báo chung',
       content: 'Thông báo 2',
     },
     {
       id: 5,
+      sensor_name: 'Sensor 1',
+      header: 'Thông báo chung',
       content: 'Thông báo 1',
     },
     {
       id: 6,
+      sensor_name: 'Sensor 1',
+      header: 'Thông báo chung',
       content: 'Thông báo 2',
     },
     {
       id: 7,
+      sensor_name: 'Sensor 1',
+      header: 'Thông báo chung',
       content: 'Thông báo 1',
     },
     {
       id: 8,
+      sensor_name: 'Sensor 1',
+      header: 'Thông báo chung',
       content: 'Thông báo 2',
     },
     {
       id: 9,
+      sensor_name: 'Sensor 1',
+      header: 'Thông báo chung',
       content: 'Thông báo 1',
     },
     {
       id: 10,
+      sensor_name: 'Sensor 1',
+      header: 'Thông báo chung',
       content: 'Thông báo 2',
     },
     {
       id: 11,
+      sensor_name: 'Sensor 1',
+      header: 'Thông báo chung',
       content: 'Thông báo 1',
     },
     {
       id: 12,
+      sensor_name: 'Sensor 1',
+      header: 'Thông báo chung',
       content: 'Thông báo 2',
     },
     {
       id: 13,
+      sensor_name: 'Sensor 1',
+      header: 'Thông báo chung',
       content: 'Thông báo 1',
     },
     {
       id: 14,
+      sensor_name: 'Sensor 1',
+      header: 'Thông báo chung',
       content: 'Thông báo 2',
     },
     {
       id: 15,
+      sensor_name: 'Sensor 1',
+      header: 'Thông báo chung',
       content: 'Thông báo 1',
     },
   ];
 }
 
-const NotificationListItem: React.FC<{ notification: Notification }> = ({
-  notification,
-}) => {
-  return (
-    <li className="border-y py-3 hover:cursor-pointer hover:bg-slate-50">
-      {notification.content}
-    </li>
-  );
-};
+export const NotificationPageContext = createContext(-1);
 
 export default function NotificationsPage() {
   const notifications: Notification[] = fetchAllNotifications();
+
+  const [selectedNotiId, setSelectedNotiId] = useState<number>(-1);
 
   return (
     <div className="p-4">
@@ -95,18 +117,26 @@ export default function NotificationsPage() {
 
       <h1 className="my-4 text-4xl">Thông báo đã nhận</h1>
 
-      <ul className="w-full table-fixed">
-        {notifications.map((notification) => (
-          <NotificationListItem
-            key={notification.id}
-            notification={notification}
-          />
-        ))}
-      </ul>
+      <div className="w-full table-fixed rounded-md border">
+        <NotificationPageContext.Provider value={selectedNotiId}>
+          {notifications.map((notification) => (
+            <NotificationItem
+              key={notification.id}
+              notification={notification}
+              setSelectedNotiId={setSelectedNotiId}
+            />
+          ))}
+        </NotificationPageContext.Provider>
+      </div>
 
-      <button className="button p-4" type="button">
-        Hiển thị thêm...
-      </button>
+      <div className="flex w-full justify-center py-2">
+        <button
+          className="button rounded-lg border p-4 hover:bg-slate-50"
+          type="button"
+        >
+          Hiển thị thêm...
+        </button>
+      </div>
     </div>
   );
 }
