@@ -1,14 +1,11 @@
 import {
   Circle,
-  LayerGroup,
   MapContainer,
   TileLayer,
   Tooltip,
-  useMap,
 } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { useCallback, useEffect, useState } from 'react';
-import { LatLngExpression, Map } from 'leaflet';
+import { LatLngExpression } from 'leaflet';
 
 // metadata
 const TILE_LAYER_ATTRIBUTION =
@@ -21,14 +18,15 @@ interface DeviceLocation {
   location: LatLngExpression;
 }
 interface MapProps {
-  setSelectedId: React.Dispatch<any>;
-  setMap: React.Dispatch<any>;
+  setSelectedId: React.Dispatch<any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+  setMap: React.Dispatch<any>;        // eslint-disable-line @typescript-eslint/no-explicit-any
   selectedId: string;
   className: string;
   data: DeviceLocation[];
 }
 
-export const convertDevice = (object: any): DeviceLocation => {
+
+export const convertDevice = (object: any): DeviceLocation => { // eslint-disable-line @typescript-eslint/no-explicit-any
   return {
     id: object.id,
     connected: object.connected,
@@ -39,7 +37,6 @@ export const convertDevice = (object: any): DeviceLocation => {
 export default function MapEngine(props: MapProps) {
   // mapdata
   const position = { lat: 10.5082062, lng: 106.8602405 };
-  const style = { width: '100%' };
   const zoom = 13;
 
   const data = props.data;

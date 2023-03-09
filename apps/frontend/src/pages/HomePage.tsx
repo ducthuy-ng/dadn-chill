@@ -11,7 +11,6 @@ interface SensorData {
   humidity: number;
   lux: number;
   windSpeed: number;
-
   location: LatLngExpression;
 }
 
@@ -95,7 +94,7 @@ export function DisplayPosition({ map }: DisplayPositionProps) {
 
   const onClick = useCallback(() => {
     map.setView(center, zoom);
-  }, [map]);
+  }, [map, center, zoom]);
 
   const onMove = useCallback(() => {
     setPosition(map.getCenter());
@@ -124,7 +123,7 @@ export function DisplayPosition({ map }: DisplayPositionProps) {
 
 export default function HomePage() {
   const [selectedId, setSelectedId] = useState('');
-  const [map, setMap] = useState<any>(null);
+  const [map, setMap] = useState<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
   const zoom = 13;
 
   const handleClickOnMap = (position: LatLngExpression): void => {

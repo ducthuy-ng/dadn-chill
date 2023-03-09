@@ -4,6 +4,7 @@ import { Link, Route, Routes } from 'react-router-dom';
 import { Navbar } from '../components';
 import NotificationsPage from '../pages/NotificationsPage';
 import HomePage from '../pages/HomePage';
+import SensorView from '../pages/SensorView';
 
 // import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
 
@@ -25,6 +26,7 @@ export function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/notifications" element={<NotificationsPage />}></Route>
+        <Route path="/sensor" element={<SensorView />} />
         <Route
           path="/page-2"
           element={
