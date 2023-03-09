@@ -1,26 +1,27 @@
 import { InMemNotificationRepo } from '../../infras/InMemNotificationRepo';
 import { InMemSensorRepo } from '../../infras/InMemSensorRepo';
+import { ReadEventRepo } from '../domain/analysis/readEvent.repo';
 import { ClientManager } from '../domain/ClientManager';
-import { Notification } from '../domain/notification';
+import { SensorIdNotFound } from '../domain/sensor/exception';
 import { Sensor } from '../domain/sensor/sensor';
 import { SensorReadEvent } from '../domain/sensor/sensorReadEvent';
-import { ProcessReadEventUseCase } from './ProcessReadEvent';
-import { GetSingleSensorUseCase } from '../usecases/GetSingleSensor';
 import { SkipCheck } from '../domain/sensor/sensorReadEvent/middleware/SkipCheck';
-import { ReadEventRepo } from '../domain/analysis/readEvent.repo';
-import { SensorIdNotFound } from '../domain/sensor/exception';
+import { GetSingleSensorUseCase } from '../usecases/GetSingleSensor';
+import { ProcessReadEventUseCase } from './ProcessReadEvent';
 
 class MockClientManager implements ClientManager {
-  propagateNotifications = jest.fn((notificationList: Notification[]) => {
+  propagateNotifications = jest.fn(() => {
     return;
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   propagateSensorReadEvent = jest.fn((event: SensorReadEvent) => {
     return;
   });
 }
 
 class MockReadEventRepo implements ReadEventRepo {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   storeEvent = jest.fn((event: SensorReadEvent) => {
     return;
   });
