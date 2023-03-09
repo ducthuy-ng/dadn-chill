@@ -114,8 +114,7 @@ export function DisplayPosition({ map }: DisplayPositionProps) {
       role="alert"
     >
       <span className="font-medium">
-        latitude: {position.lat.toFixed(4)}, longitude:{' '}
-        {position.lng.toFixed(4)}{' '}
+        latitude: {position.lat.toFixed(4)}, longitude: {position.lng.toFixed(4)}{' '}
       </span>
       <button onClick={onClick}>reset</button>
     </div>

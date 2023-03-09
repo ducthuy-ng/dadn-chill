@@ -1,11 +1,4 @@
-import {
-  Circle,
-  LayerGroup,
-  MapContainer,
-  TileLayer,
-  Tooltip,
-  useMap,
-} from 'react-leaflet';
+import { Circle, LayerGroup, MapContainer, TileLayer, Tooltip, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useCallback, useEffect, useState } from 'react';
 import { LatLngExpression, Map } from 'leaflet';
@@ -45,12 +38,7 @@ export default function MapEngine(props: MapProps) {
   const data = props.data;
 
   return (
-    <MapContainer
-      center={position}
-      zoom={zoom}
-      ref={props.setMap}
-      className={props.className}
-    >
+    <MapContainer center={position} zoom={zoom} ref={props.setMap} className={props.className}>
       <TileLayer attribution={TILE_LAYER_ATTRIBUTION} url={TILE_LAYER_URL} />
 
       {data.map((item) => (
