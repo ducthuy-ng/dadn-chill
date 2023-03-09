@@ -1,7 +1,7 @@
-import { useState, useCallback, useEffect } from 'react';
-import MapEngine, { convertDevice } from '../components/Map';
-import { FaCaretLeft, FaCaretRight, FaEye } from 'react-icons/fa';
 import { LatLngExpression, Map } from 'leaflet';
+import { useCallback, useEffect, useState } from 'react';
+import { FaCaretLeft, FaCaretRight, FaEye } from 'react-icons/fa';
+import MapEngine, { convertDevice } from '../components/Map';
 
 interface SensorData {
   id: string;
@@ -114,8 +114,7 @@ export function DisplayPosition({ map }: DisplayPositionProps) {
       role="alert"
     >
       <span className="font-medium">
-        latitude: {position.lat.toFixed(4)}, longitude:{' '}
-        {position.lng.toFixed(4)}{' '}
+        latitude: {position.lat.toFixed(4)}, longitude: {position.lng.toFixed(4)}{' '}
       </span>
       <button onClick={onClick}>reset</button>
     </div>
