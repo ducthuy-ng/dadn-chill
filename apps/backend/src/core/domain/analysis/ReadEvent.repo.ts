@@ -1,7 +1,5 @@
 import { SensorReadEvent } from '../sensor/sensorReadEvent';
 
-interface ReadEventRepo {
+export interface ReadEventRepo {
   storeEvent(event: SensorReadEvent);
 }
-
-export { ReadEventRepo };

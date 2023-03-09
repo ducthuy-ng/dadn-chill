@@ -11,6 +11,7 @@
     "lint": "npx nx lint frontend; npx nx lint backend",
     "format": "npx nx format:write --all",
     "test:backend": "npx nx test backend",
+    "cicd:test:backend": "npx nx test backend --verbose",
     "clean:dev": "sh -c './bin/clean-dev.sh'"
   },
   "private": true,

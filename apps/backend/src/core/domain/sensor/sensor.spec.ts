@@ -13,10 +13,11 @@ describe('Test Sensor domain logic', () => {
   });
 
   it('Sensor should handle event correctly', () => {
+    const readTimestamp = new Date().toISOString()
     testSensor.processReadEvent({
       sensorId: 1,
       sensorValue: {
-        readTimestamp: new Date().toISOString(),
+        readTimestamp: readTimestamp,
         humidity: 1,
         temperature: 1,
         lightIntensity: 1,
@@ -25,15 +26,12 @@ describe('Test Sensor domain logic', () => {
     });
 
     expect(testSensor.getReadValue()).toStrictEqual({
-      readTimestamp: new Date().toISOString(),
+      readTimestamp: readTimestamp,
       humidity: 1,
       temperature: 1,
       lightIntensity: 1,
       windSpeed: 1,
     });
-    // expect(testSensor.getTemperature()).toEqual(1);
-    // expect(testSensor.getLightIntensity()).toEqual(1);
-    // expect(testSensor.getWindSpeed()).toEqual(1);
   });
 
   it('Unmatched event should be ignored', () => {
