@@ -71,13 +71,9 @@ function fetchAllNotifications(): Notification[] {
   ];
 }
 
-const NotificationListItem: React.FC<{ notification: Notification }> = ({
-  notification,
-}) => {
+const NotificationListItem: React.FC<{ notification: Notification }> = ({ notification }) => {
   return (
-    <li className="border-y py-3 hover:cursor-pointer hover:bg-slate-50">
-      {notification.content}
-    </li>
+    <li className="border-y py-3 hover:cursor-pointer hover:bg-slate-50">{notification.content}</li>
   );
 };
 
@@ -97,10 +93,7 @@ export default function NotificationsPage() {
 
       <ul className="w-full table-fixed">
         {notifications.map((notification) => (
-          <NotificationListItem
-            key={notification.id}
-            notification={notification}
-          />
+          <NotificationListItem key={notification.id} notification={notification} />
         ))}
       </ul>
 

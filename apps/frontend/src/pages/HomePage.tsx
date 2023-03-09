@@ -1,23 +1,12 @@
-import { useState, useCallback, useEffect } from 'react';
-import MapEngine, { convertDevice } from '../components/Map';
-import { FaCaretLeft, FaCaretRight, FaEye } from 'react-icons/fa';
 import { LatLngExpression, Map } from 'leaflet';
-
-interface SensorData {
-  id: string;
-  name: string;
-  connected: boolean;
-  temperature: number;
-  humidity: number;
-  lux: number;
-  windSpeed: number;
-
-  location: LatLngExpression;
-}
+import { useCallback, useEffect, useState } from 'react';
+import { FaCaretLeft, FaCaretRight, FaEye } from 'react-icons/fa';
+import MapEngine from '../components/Map';
+import { SensorData } from '../model/SensorData';
 
 const sensorDummyData: SensorData[] = [
   {
-    id: 'sensor-001',
+    id: 1,
     name: 'Cảm biến 1',
     connected: true,
     temperature: 1,
@@ -28,7 +17,7 @@ const sensorDummyData: SensorData[] = [
     location: [10.552493, 106.873474],
   },
   {
-    id: 'sensor-002',
+    id: 2,
     name: 'Cảm biến 2',
     connected: false,
     temperature: 1,
@@ -39,7 +28,7 @@ const sensorDummyData: SensorData[] = [
     location: [10.5390624, 106.879069],
   },
   {
-    id: 'sensor-003',
+    id: 3,
     name: 'Cảm biến 3',
     connected: false,
     temperature: 1,
@@ -50,7 +39,7 @@ const sensorDummyData: SensorData[] = [
     location: [10.5257651, 106.8480182],
   },
   {
-    id: 'sensor-004',
+    id: 4,
     name: 'Cảm biến 4',
     connected: true,
     temperature: 1,
@@ -61,7 +50,7 @@ const sensorDummyData: SensorData[] = [
     location: [10.5122799, 106.7979179],
   },
   {
-    id: 'sensor-005',
+    id: 5,
     name: 'Cảm biến 5',
     connected: true,
     temperature: 1,
@@ -72,7 +61,7 @@ const sensorDummyData: SensorData[] = [
     location: [10.478189, 106.839396],
   },
   {
-    id: 'sensor-006',
+    id: 6,
     name: 'Cảm biến 6',
     connected: false,
     temperature: 2,
@@ -95,7 +84,7 @@ export function DisplayPosition({ map }: DisplayPositionProps) {
 
   const onClick = useCallback(() => {
     map.setView(center, zoom);
-  }, [map]);
+  }, [map, center, zoom]);
 
   const onMove = useCallback(() => {
     setPosition(map.getCenter());
@@ -114,8 +103,7 @@ export function DisplayPosition({ map }: DisplayPositionProps) {
       role="alert"
     >
       <span className="font-medium">
-        latitude: {position.lat.toFixed(4)}, longitude:{' '}
-        {position.lng.toFixed(4)}{' '}
+        latitude: {position.lat.toFixed(4)}, longitude: {position.lng.toFixed(4)}{' '}
       </span>
       <button onClick={onClick}>reset</button>
     </div>
@@ -123,11 +111,11 @@ export function DisplayPosition({ map }: DisplayPositionProps) {
 }
 
 export default function HomePage() {
-  const [selectedId, setSelectedId] = useState('');
-  const [map, setMap] = useState<any>(null);
+  const [map, setMap] = useState<Map | null>(null);
   const zoom = 13;
 
   const handleClickOnMap = (position: LatLngExpression): void => {
+    if (map === null) return;
     map.setView(position, zoom);
     setMap(map);
   };
@@ -189,16 +177,12 @@ export default function HomePage() {
         <div className="relative col-span-2 mx-1 h-full rounded-md">
           <MapEngine
             className="z-0 h-full"
-            selectedId={selectedId}
-            setSelectedId={setSelectedId}
             setMap={setMap}
-            data={sensorDummyData.map((el) =>
-              convertDevice({
-                id: el.id,
-                connected: el.connected,
-                location: el.location,
-              })
-            )}
+            data={sensorDummyData.map((el) => ({
+              id: el.id,
+              connected: el.connected,
+              location: el.location,
+            }))}
           />
           {map ? <DisplayPosition map={map} /> : null}
         </div>
