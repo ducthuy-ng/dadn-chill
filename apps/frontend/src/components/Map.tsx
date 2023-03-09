@@ -23,7 +23,6 @@ interface MapProps {
 export default function MapEngine(props: MapProps) {
   // mapdata
   const position = { lat: 10.5082062, lng: 106.8602405 };
-
   const zoom = 13;
 
   const data = props.data;
