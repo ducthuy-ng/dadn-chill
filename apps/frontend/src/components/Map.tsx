@@ -1,7 +1,6 @@
-import { Circle, LayerGroup, MapContainer, TileLayer, Tooltip, useMap } from 'react-leaflet';
+import { LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { useCallback, useEffect, useState } from 'react';
-import { LatLngExpression, Map } from 'leaflet';
+import { Circle, MapContainer, TileLayer, Tooltip } from 'react-leaflet';
 
 // metadata
 const TILE_LAYER_ATTRIBUTION =
@@ -32,7 +31,6 @@ export const convertDevice = (object: any): DeviceLocation => {
 export default function MapEngine(props: MapProps) {
   // mapdata
   const position = { lat: 10.5082062, lng: 106.8602405 };
-  const style = { width: '100%' };
   const zoom = 13;
 
   const data = props.data;

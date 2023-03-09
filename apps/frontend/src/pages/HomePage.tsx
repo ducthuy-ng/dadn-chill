@@ -1,7 +1,7 @@
-import { useState, useCallback, useEffect } from 'react';
-import MapEngine, { convertDevice } from '../components/Map';
-import { FaCaretLeft, FaCaretRight, FaEye } from 'react-icons/fa';
 import { LatLngExpression, Map } from 'leaflet';
+import { useCallback, useEffect, useState } from 'react';
+import { FaCaretLeft, FaCaretRight, FaEye } from 'react-icons/fa';
+import MapEngine, { convertDevice } from '../components/Map';
 
 interface SensorData {
   id: string;
