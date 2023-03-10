@@ -18,10 +18,7 @@ describe('Test checkTemperature domain logic', () => {
       },
     };
 
-    const receivedNotifications = middleware.check(
-      belowThresholdEvent,
-      testSensor
-    );
+    const receivedNotifications = middleware.check(belowThresholdEvent, testSensor);
     expect(receivedNotifications).toHaveLength(0);
   });
 });

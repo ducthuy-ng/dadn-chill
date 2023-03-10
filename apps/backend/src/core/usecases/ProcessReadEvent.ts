@@ -1,4 +1,4 @@
-import { ReadEventRepo } from '../domain/analysis/readEvent.repo';
+import { ReadEventRepo } from '../domain/analysis/ReadEvent.repo';
 import { ClientManager } from '../domain/ClientManager';
 import { NotificationRepo } from '../domain/notification';
 import { SensorRepo } from '../domain/sensor/sensor';

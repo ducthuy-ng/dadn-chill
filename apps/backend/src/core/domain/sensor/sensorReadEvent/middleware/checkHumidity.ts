@@ -10,19 +10,12 @@ class CheckHumidityMiddleware extends LimitCheckMiddleware {
     this.humidityThreshold = humidityThreshold;
   }
 
-  public check(
-    event: SensorReadEvent,
-    processingSensor: Sensor
-  ): Notification[] {
+  public check(event: SensorReadEvent, processingSensor: Sensor): Notification[] {
     const returnNotifications = [];
 
     if (event.sensorValue.humidity <= this.humidityThreshold) {
       returnNotifications.push(
-        new Notification(
-          processingSensor,
-          'Alert: too dry',
-          'The humidity is below threshold'
-        )
+        new Notification(processingSensor, 'Alert: too dry', 'The humidity is below threshold')
       );
     }
 

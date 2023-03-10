@@ -4,7 +4,7 @@ import {
   LightIntensityHistoryItem,
   TemperatureHistoryItem,
   WindSpeedHistoryItem,
-} from '../domain/analysis/analysisTool';
+} from '../domain/analysis/AnalysisTool';
 
 type AnalysisResult = {
   temperatureData: TemperatureHistoryItem[];
@@ -22,14 +22,10 @@ class GetAnalysisDataUseCase {
 
   execute(sensorId: number): AnalysisResult {
     return {
-      temperatureData:
-        this.analysisTool.getTemperatureLastWeekByDayScaleOfSensor(sensorId),
-      humidityData:
-        this.analysisTool.getHumidityLastWeekByDayScaleOfSensor(sensorId),
-      lightIntensityData:
-        this.analysisTool.getLightIntensityLastWeekByDayScaleOfSensor(sensorId),
-      windSpeedData:
-        this.analysisTool.getWindSpeedLastWeekByDayScaleOfSensor(sensorId),
+      temperatureData: this.analysisTool.getTemperatureLastWeekByDayScaleOfSensor(sensorId),
+      humidityData: this.analysisTool.getHumidityLastWeekByDayScaleOfSensor(sensorId),
+      lightIntensityData: this.analysisTool.getLightIntensityLastWeekByDayScaleOfSensor(sensorId),
+      windSpeedData: this.analysisTool.getWindSpeedLastWeekByDayScaleOfSensor(sensorId),
     };
   }
 }

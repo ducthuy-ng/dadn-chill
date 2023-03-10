@@ -19,18 +19,10 @@ type WindSpeedHistoryItem = {
 };
 
 interface AnalysisTool {
-  getTemperatureLastWeekByDayScaleOfSensor(
-    sensorId: number
-  ): TemperatureHistoryItem[];
-  getHumidityLastWeekByDayScaleOfSensor(
-    sensorId: number
-  ): HumidityHistoryItem[];
-  getLightIntensityLastWeekByDayScaleOfSensor(
-    sensorId: number
-  ): LightIntensityHistoryItem[];
-  getWindSpeedLastWeekByDayScaleOfSensor(
-    sensorId: number
-  ): WindSpeedHistoryItem[];
+  getTemperatureLastWeekByDayScaleOfSensor(sensorId: number): TemperatureHistoryItem[];
+  getHumidityLastWeekByDayScaleOfSensor(sensorId: number): HumidityHistoryItem[];
+  getLightIntensityLastWeekByDayScaleOfSensor(sensorId: number): LightIntensityHistoryItem[];
+  getWindSpeedLastWeekByDayScaleOfSensor(sensorId: number): WindSpeedHistoryItem[];
 }
 
 export {

@@ -24,10 +24,7 @@ describe('Test linking middleware', () => {
       },
     };
 
-    const receivedNotifications = middleware.check(
-      onlyTempErrorEvent,
-      testSensor
-    );
+    const receivedNotifications = middleware.check(onlyTempErrorEvent, testSensor);
     expect(receivedNotifications).toHaveLength(1);
   });
 
@@ -43,10 +40,7 @@ describe('Test linking middleware', () => {
       },
     };
 
-    const receivedNotifications = middleware.check(
-      onlyHumidErrorEvent,
-      testSensor
-    );
+    const receivedNotifications = middleware.check(onlyHumidErrorEvent, testSensor);
     expect(receivedNotifications).toHaveLength(1);
   });
 
@@ -62,10 +56,7 @@ describe('Test linking middleware', () => {
       },
     };
 
-    const receivedNotifications = middleware.check(
-      bothLimitPassedEvent,
-      testSensor
-    );
+    const receivedNotifications = middleware.check(bothLimitPassedEvent, testSensor);
     expect(receivedNotifications).toHaveLength(2);
   });
 });

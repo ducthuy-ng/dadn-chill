@@ -1,6 +1,6 @@
 import { InMemNotificationRepo } from '../../infras/InMemNotificationRepo';
 import { InMemSensorRepo } from '../../infras/InMemSensorRepo';
-import { ReadEventRepo } from '../domain/analysis/readEvent.repo';
+import { ReadEventRepo } from '../domain/analysis/ReadEvent.repo';
 import { ClientManager } from '../domain/ClientManager';
 import { SensorIdNotFound } from '../domain/sensor/exception';
 import { Sensor } from '../domain/sensor/sensor';

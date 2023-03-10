@@ -18,15 +18,9 @@ abstract class LimitCheckMiddleware {
     return first;
   }
 
-  public abstract check(
-    event: SensorReadEvent,
-    processingSensor: Sensor
-  ): Notification[];
+  public abstract check(event: SensorReadEvent, processingSensor: Sensor): Notification[];
 
-  protected checkNext(
-    event: SensorReadEvent,
-    processingSensor: Sensor
-  ): Notification[] {
+  protected checkNext(event: SensorReadEvent, processingSensor: Sensor): Notification[] {
     if (this.next == null) {
       return [];
     }

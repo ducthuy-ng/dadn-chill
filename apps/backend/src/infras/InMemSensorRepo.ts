@@ -1,7 +1,4 @@
-import {
-  PageOutOfRange,
-  SensorIdNotFound,
-} from '../core/domain/sensor/exception';
+import { PageOutOfRange, SensorIdNotFound } from '../core/domain/sensor/exception';
 import { Sensor, SensorId, SensorRepo } from '../core/domain/sensor/sensor';
 
 export class InMemSensorRepo implements SensorRepo {

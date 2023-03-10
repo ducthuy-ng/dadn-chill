@@ -13,7 +13,7 @@ describe('Test Sensor domain logic', () => {
   });
 
   it('Sensor should handle event correctly', () => {
-    const readTimestamp = new Date().toISOString()
+    const readTimestamp = new Date().toISOString();
     testSensor.processReadEvent({
       sensorId: 1,
       sensorValue: {

@@ -10,10 +10,7 @@ class CheckTemperatureMiddleware extends LimitCheckMiddleware {
     this.temperatureThreshold = temperatureThreshold;
   }
 
-  public check(
-    event: SensorReadEvent,
-    processingSensor: Sensor
-  ): Notification[] {
+  public check(event: SensorReadEvent, processingSensor: Sensor): Notification[] {
     const returnNotifications = [];
     if (event.sensorValue.temperature >= this.temperatureThreshold) {
       returnNotifications.push(
