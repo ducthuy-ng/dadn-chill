@@ -130,10 +130,7 @@ export default function NotificationsPage() {
       </div>
 
       <div className="flex w-full justify-center py-2">
-        <button
-          className="button rounded-lg border p-4 hover:bg-slate-50"
-          type="button"
-        >
+        <button className="button rounded-lg border p-4 hover:bg-slate-50" type="button">
           Hiển thị thêm...
         </button>
       </div>
