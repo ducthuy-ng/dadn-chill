@@ -12,7 +12,7 @@ export function NotificationItem(props: NotificationItemProps) {
   const selectedNotiId = useContext(NotificationPageContext);
   const isShowingDetail = selectedNotiId === props.notification.id;
 
-  const toggleContent = () => () => {
+  const toggleContent = () => {
     selectedNotiId === props.notification.id
       ? props.setSelectedNotiId(-1)
       : props.setSelectedNotiId(props.notification.id);
@@ -26,17 +26,11 @@ export function NotificationItem(props: NotificationItemProps) {
         onClick={toggleContent}
       >
         <div>
-          <h2 className="text-lg font-medium">
-            {props.notification.sensor_name}
-          </h2>
-          <h3 className="text-sm font-extralight">
-            {props.notification.header}
-          </h3>
+          <h2 className="text-lg font-medium">{props.notification.sensor_name}</h2>
+          <h3 className="text-sm font-extralight">{props.notification.header}</h3>
         </div>
 
-        <FaAngleDown
-          className={`transition-transform ${isShowingDetail && 'rotate-180'}`}
-        />
+        <FaAngleDown className={`transition-transform ${isShowingDetail && 'rotate-180'}`} />
       </div>
 
       <hr className={`${isShowingDetail ? 'block' : 'hidden'}`} />
