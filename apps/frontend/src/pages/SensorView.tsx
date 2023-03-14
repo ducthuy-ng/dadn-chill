@@ -1,12 +1,54 @@
+import moment from 'moment';
 import { useEffect, useState } from 'react';
 import { FaCalendarAlt, FaLocationArrow, FaPencilAlt } from 'react-icons/fa';
+import {
+  LineChart,
+  Line,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 
 const sensor = {
   name: 'Cảm biến 1',
   location: [1, 1],
   connected: true,
-  href: '/sensor',
+  href: `/sensor`,
   breadcrumbs: [{ id: 1, name: 'Trang chủ', href: '/' }],
+  data: [
+    {
+      temperature: 30,
+      humidity: 51,
+      lux: 67,
+      date: 'Mar 9, 2022, 17:03:00',
+    },
+    {
+      temperature: 28,
+      humidity: 84,
+      lux: 121,
+      date: 'Mar 9, 2022, 17:03:30',
+    },
+    {
+      temperature: 32,
+      humidity: 80,
+      lux: 51,
+      date: 'Mar 9, 2022, 17:04:00',
+    },
+    {
+      temperature: 32,
+      humidity: 88,
+      lux: 128,
+      date: 'Mar 9, 2022, 17:04:30',
+    },
+    {
+      temperature: 27,
+      humidity: 89,
+      lux: 101,
+      date: 'Mar 9, 2022, 17:05:00',
+    },
+  ],
 };
 
 export default function SensorView() {
@@ -22,45 +64,6 @@ export default function SensorView() {
   return (
     <div className="flex-grow p-2">
       {/* breadcumb */}
-
-      <nav aria-label="Breadcrumb">
-        <ol
-          // role="list"
-          className="flex max-w-2xl items-center space-x-2 px-4 pt-4 pb-2 sm:px-6 lg:max-w-7xl lg:px-8"
-        >
-          {sensor.breadcrumbs.map((breadcrumb) => (
-            <li key={breadcrumb.id}>
-              <div className="flex items-center">
-                <a
-                  href={breadcrumb.href}
-                  className="mr-2 text-sm font-medium text-gray-900"
-                >
-                  {breadcrumb.name}
-                </a>
-                <svg
-                  width={16}
-                  height={20}
-                  viewBox="0 0 16 20"
-                  fill="currentColor"
-                  aria-hidden="true"
-                  className="h-5 w-4 text-gray-300"
-                >
-                  <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
-                </svg>
-              </div>
-            </li>
-          ))}
-          <li className="text-sm">
-            <a
-              href={sensor.href}
-              aria-current="page"
-              className="font-medium text-gray-500 hover:text-gray-600"
-            >
-              {sensor.name}
-            </a>
-          </li>
-        </ol>
-      </nav>
 
       <div className="px-8 pb-4 lg:flex lg:items-center lg:justify-between">
         <div className="min-w-0 flex-1">
@@ -122,36 +125,79 @@ export default function SensorView() {
         </div>
       </div>
 
-      <main className="flex-grow border-2">
-        <div className="flex flex-row flex-wrap border-2 p-2">
-          <div className="mx-2 block flex-1 rounded-xl border border-gray-200 bg-white p-6 shadow">
+      <main className="flex-grow">
+        <div className="flex flex-row flex-wrap">
+          <div className="mx-2 block flex-1 bg-white p-6 ">
             <h2 className="text-lg font-bold tracking-tight text-gray-900">
               Nhiệt độ
             </h2>
-            <div></div>
+            <div>
+              <ResponsiveContainer width="95%" height={200}>
+                <LineChart width={500} height={300} data={sensor.data}>
+                  <XAxis
+                    dataKey="date"
+                    tickFormatter={(unixTime) =>
+                      moment(unixTime).format('HH:mm:ss')
+                    }
+                  />
+                  <YAxis />
+                  <CartesianGrid stroke="#eee" strokeDasharray="6 6" />
+                  <Line
+                    type="monotone"
+                    dataKey="temperature"
+                    stroke="#8884d8"
+                  />
+                  <Tooltip />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </div>
 
-          <div className="mx-2 block flex-1 rounded-xl border border-gray-200 bg-white p-6 shadow">
+          <div className="mx-2 block flex-1 bg-white p-6 ">
             <h2 className="text-lg font-bold tracking-tight text-gray-900">
               Độ ẩm
             </h2>
-            <div></div>
+
+            <div>
+              <ResponsiveContainer width="95%" height={200}>
+                <LineChart width={500} height={300} data={sensor.data}>
+                  <XAxis
+                    dataKey="date"
+                    tickFormatter={(unixTime) =>
+                      moment(unixTime).format('HH:mm:ss')
+                    }
+                  />
+                  <YAxis />
+                  <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
+                  <Line type="monotone" dataKey="humidity" stroke="#8884d8" />
+                  <Tooltip />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
 
-        <div className="flex flex-row flex-wrap border-2 p-2">
-          <div className="mx-2 block flex-1 rounded-xl border border-gray-200 bg-white p-6 shadow">
-            <h2 className="text-lg font-bold tracking-tight text-gray-900">
-              Tốc độ gió
-            </h2>
-            <div></div>
-          </div>
-
-          <div className="mx-2 block flex-1 rounded-xl border border-gray-200 bg-white p-6 shadow">
-            <h2 className="text-lg font-bold tracking-tight text-gray-900">
-              Cường độ ánh sáng
-            </h2>
-            <div></div>
+        <div className="mx-2 block flex-1  bg-white p-6 ">
+          <h2 className="text-lg font-bold tracking-tight text-gray-900">
+            Cường độ ánh sáng
+          </h2>
+          <div>
+            <ResponsiveContainer width="95%" height={200}>
+              <LineChart width={500} height={300} data={sensor.data}>
+                <XAxis
+                  dataKey="date"
+                  tickFormatter={(unixTime) =>
+                    moment(unixTime).format('HH:mm:ss')
+                  }
+                  domain={['auto', 'auto']}
+                  name="Thời gian"
+                />
+                <YAxis />
+                <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
+                <Line type="monotone" dataKey="lux" stroke="#8884d8" />
+                <Tooltip />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </main>
