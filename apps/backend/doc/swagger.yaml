@@ -1,0 +1,104 @@
+openapi: '3.0.2'
+info:
+  title: API Title
+  version: '1.0'
+servers:
+  - url: https://api.server.test/v1
+paths:
+  /sensors:
+    get:
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: number
+          required: false
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sensor'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMsg'
+
+  /sensor/{id}:
+    get:
+      parameters:
+        - in: path
+          required: true
+          name: id
+          schema:
+            type: number
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sensor'
+
+  # /client/subscribe:
+  #   get:
+  #     parameters:
+  #       - in: query
+  #         name: sensorIds
+  #         schema:
+  #           type: array
+  #           uniqueItems: true
+  #           items:
+  #             type: number
+  #     responses:
+  #       '200':
+  #         description: OK
+
+components:
+  schemas:
+    GeoLocation:
+      type: array
+      items:
+        type: number
+      example: [123.45, 678.90]
+      maxItems: 2
+      minItems: 2
+
+    Sensor:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        lastUpdateTimestamp:
+          type: string
+          format: date-time
+        temperature:
+          type: number
+        humidity:
+          type: number
+        lux:
+          type: number
+        windSpeed:
+          type: number
+
+        location:
+          $ref: '#/components/schemas/GeoLocation'
+
+    ErrorMsg:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the error, for debug
+          example: NotANumber
+        detail:
+          type: string
+          description: Error description, can be display to user
+          example: Input must be a number
