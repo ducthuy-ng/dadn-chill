@@ -5,13 +5,16 @@ import { Navbar } from '../components';
 import NotificationsPage from '../pages/NotificationsPage';
 import HomePage from '../pages/HomePage';
 import SensorView from '../pages/SensorView';
-
-// import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
+import Sidebar from '../components/Sidebar';
+import { sidebar } from '../store';
+import { useAtom } from 'jotai';
 
 export function App() {
+  const [show] = useAtom(sidebar)
   return (
-    <div className="flex h-screen flex-col">
-      <Navbar />
+    <>
+      <Sidebar />
+
       {/* <br />
       <div role="navigation">
         <ul>
@@ -23,20 +26,23 @@ export function App() {
           </li>
         </ul>
       </div> */}
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/notifications" element={<NotificationsPage />}></Route>
-        <Route path="/sensor" element={<SensorView />} />
-        <Route
-          path="/page-2"
-          element={
-            <div>
-              <Link to="/">Click here to go back to root page.</Link>
-            </div>
-          }
-        />
-      </Routes>
-    </div>
+      <div className={`flex h-screen flex-col${show ? " blur": ""}` }>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/notifications" element={<NotificationsPage />}></Route>
+          <Route path="/sensor" element={<SensorView />} />
+          <Route
+            path="/page-2"
+            element={
+              <div>
+                <Link to="/">Click here to go back to root page.</Link>
+              </div>
+            }
+          />
+        </Routes>
+      </div>
+    </>
   );
 }
 
