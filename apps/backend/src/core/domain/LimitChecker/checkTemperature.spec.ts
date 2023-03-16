@@ -1,5 +1,5 @@
-import { SensorReadEvent } from '..';
-import { Sensor } from '../..';
+import { Sensor } from '../Sensor';
+import { SensorReadEvent } from '../SensorReadEvent';
 import { CheckTemperatureMiddleware } from './checkTemperature';
 
 describe('Test checkTemperature domain logic', () => {
@@ -9,12 +9,12 @@ describe('Test checkTemperature domain logic', () => {
   it('above threshold should return notification', () => {
     const belowThresholdEvent: SensorReadEvent = {
       sensorId: 1,
+      readTimestamp: new Date().toISOString(),
       sensorValue: {
-        readTimestamp: new Date().toISOString(),
         humidity: 1,
         temperature: 55,
         lightIntensity: 0,
-        windSpeed: 0,
+        earthMoisture: 0,
       },
     };
 
@@ -28,12 +28,12 @@ describe('Test checkTemperature domain logic', () => {
   it('below threshold should not return notification', () => {
     const belowThresholdEvent: SensorReadEvent = {
       sensorId: 1,
+      readTimestamp: new Date().toISOString(),
       sensorValue: {
-        readTimestamp: new Date().toISOString(),
         humidity: 100,
         temperature: 19,
         lightIntensity: 0,
-        windSpeed: 0,
+        earthMoisture: 0,
       },
     };
 

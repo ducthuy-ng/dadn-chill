@@ -1,7 +1,7 @@
 import { LimitCheckMiddleware } from '.';
-import { SensorReadEvent } from '..';
-import { Notification } from '../../../notification';
-import { Sensor } from '../..';
+import { Sensor } from '../Sensor';
+import { SensorReadEvent } from '../SensorReadEvent';
+import { Notification } from '../Notification';
 
 class CheckHumidityMiddleware extends LimitCheckMiddleware {
   private humidityThreshold: number;

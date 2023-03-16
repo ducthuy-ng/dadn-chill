@@ -1,16 +1,16 @@
 import {
   AnalysisTool,
+  EarthMoistureHistoryItem,
   HumidityHistoryItem,
   LightIntensityHistoryItem,
   TemperatureHistoryItem,
-  WindSpeedHistoryItem,
-} from '../domain/analysis/AnalysisTool';
+} from './gateways/AnalysisTool';
 
 type AnalysisResult = {
   temperatureData: TemperatureHistoryItem[];
   humidityData: HumidityHistoryItem[];
   lightIntensityData: LightIntensityHistoryItem[];
-  windSpeedData: WindSpeedHistoryItem[];
+  earthMoistureData: EarthMoistureHistoryItem[];
 };
 
 class GetAnalysisDataUseCase {
@@ -25,7 +25,7 @@ class GetAnalysisDataUseCase {
       temperatureData: this.analysisTool.getTemperatureLastWeekByDayScaleOfSensor(sensorId),
       humidityData: this.analysisTool.getHumidityLastWeekByDayScaleOfSensor(sensorId),
       lightIntensityData: this.analysisTool.getLightIntensityLastWeekByDayScaleOfSensor(sensorId),
-      windSpeedData: this.analysisTool.getWindSpeedLastWeekByDayScaleOfSensor(sensorId),
+      earthMoistureData: this.analysisTool.getEarthMoistureLastWeekByDayScaleOfSensor(sensorId),
     };
   }
 }

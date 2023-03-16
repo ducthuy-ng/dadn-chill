@@ -1,8 +1,8 @@
-import { Sensor } from '../..';
+import { LimitCheckMiddleware } from '.';
 import { CheckHumidityMiddleware } from './checkHumidity';
 import { CheckTemperatureMiddleware } from './checkTemperature';
-import { LimitCheckMiddleware } from '.';
-import { SensorReadEvent } from '..';
+import { Sensor } from '../Sensor';
+import { SensorReadEvent } from '../SensorReadEvent';
 
 describe('Test linking middleware', () => {
   const middleware = LimitCheckMiddleware.link(
@@ -15,12 +15,12 @@ describe('Test linking middleware', () => {
   it('only temperature passed does not affect others', () => {
     const onlyTempErrorEvent: SensorReadEvent = {
       sensorId: 1,
+      readTimestamp: new Date().toISOString(),
       sensorValue: {
-        readTimestamp: new Date().toISOString(),
         humidity: 10,
         temperature: 45,
         lightIntensity: 0,
-        windSpeed: 0,
+        earthMoisture: 0,
       },
     };
 
@@ -31,12 +31,12 @@ describe('Test linking middleware', () => {
   it('only humidity passed does not affect other', () => {
     const onlyHumidErrorEvent: SensorReadEvent = {
       sensorId: 1,
+      readTimestamp: new Date().toISOString(),
       sensorValue: {
-        readTimestamp: new Date().toISOString(),
         humidity: 2,
         temperature: 0,
         lightIntensity: 0,
-        windSpeed: 0,
+        earthMoisture: 0,
       },
     };
 
@@ -47,12 +47,12 @@ describe('Test linking middleware', () => {
   it('all limit passed should returns', () => {
     const bothLimitPassedEvent: SensorReadEvent = {
       sensorId: 1,
+      readTimestamp: new Date().toISOString(),
       sensorValue: {
-        readTimestamp: new Date().toISOString(),
         humidity: 2,
         temperature: 50,
         lightIntensity: 0,
-        windSpeed: 0,
+        earthMoisture: 0,
       },
     };
 

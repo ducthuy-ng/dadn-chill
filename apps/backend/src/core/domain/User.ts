@@ -1,5 +1,4 @@
 import { randomUUID } from 'crypto';
-import { UserNotFound } from './exception';
 
 class User {
   private id: string;
@@ -35,9 +34,4 @@ class User {
   }
 }
 
-interface UserRepo {
-  getById(id: string): User;
-  getByEmail(email: string): User;
-}
-
-export { User, UserRepo, UserNotFound };
+export { User };

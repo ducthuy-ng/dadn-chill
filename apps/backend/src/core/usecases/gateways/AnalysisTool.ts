@@ -13,8 +13,8 @@ type LightIntensityHistoryItem = {
   recordedTimeStamp: string;
 };
 
-type WindSpeedHistoryItem = {
-  windSpeed: number;
+type EarthMoistureHistoryItem = {
+  EarthMoisture: number;
   recordedTimeStamp: string;
 };
 
@@ -22,13 +22,13 @@ interface AnalysisTool {
   getTemperatureLastWeekByDayScaleOfSensor(sensorId: number): TemperatureHistoryItem[];
   getHumidityLastWeekByDayScaleOfSensor(sensorId: number): HumidityHistoryItem[];
   getLightIntensityLastWeekByDayScaleOfSensor(sensorId: number): LightIntensityHistoryItem[];
-  getWindSpeedLastWeekByDayScaleOfSensor(sensorId: number): WindSpeedHistoryItem[];
+  getEarthMoistureLastWeekByDayScaleOfSensor(sensorId: number): EarthMoistureHistoryItem[];
 }
 
 export {
   TemperatureHistoryItem,
   HumidityHistoryItem,
   LightIntensityHistoryItem,
-  WindSpeedHistoryItem,
+  EarthMoistureHistoryItem,
   AnalysisTool,
 };

@@ -1,5 +1,5 @@
-import { Sensor } from '../sensor';
-import { Notification } from './index';
+import { Notification } from './Notification';
+import { Sensor } from './Sensor';
 
 describe('Test Notification domain logic', () => {
   it('Create Notification for Sensor', () => {

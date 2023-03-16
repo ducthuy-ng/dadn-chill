@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import { Sensor } from '../sensor';
+import { Sensor } from './Sensor';
 
 class Notification {
   private id: string;

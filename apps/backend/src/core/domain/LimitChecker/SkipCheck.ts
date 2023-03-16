@@ -1,7 +1,7 @@
 import { LimitCheckMiddleware } from '.';
-import { SensorReadEvent } from '..';
-import { Notification } from '../../../notification';
-import { Sensor } from '../../sensor';
+import { Notification } from '../Notification';
+import { Sensor } from '../Sensor';
+import { SensorReadEvent } from '../SensorReadEvent';
 
 export class SkipCheck extends LimitCheckMiddleware {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

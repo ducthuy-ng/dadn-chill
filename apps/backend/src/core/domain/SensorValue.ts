@@ -1,9 +1,8 @@
 type SensorValue = {
-  readTimestamp: string;
   temperature: number;
   humidity: number;
   lightIntensity: number;
-  windSpeed: number;
+  earthMoisture: number;
 };
 
 export { SensorValue };

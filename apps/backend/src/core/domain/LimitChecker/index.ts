@@ -1,6 +1,6 @@
-import { Sensor } from '../..';
-import { Notification } from '../../../notification';
-import { SensorReadEvent } from '..';
+import { Sensor } from '../Sensor';
+import { SensorReadEvent } from '../SensorReadEvent';
+import { Notification } from '../Notification';
 
 abstract class LimitCheckMiddleware {
   private next: LimitCheckMiddleware = null;

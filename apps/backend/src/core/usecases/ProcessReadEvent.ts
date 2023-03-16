@@ -1,9 +1,9 @@
-import { ReadEventRepo } from '../domain/analysis/ReadEvent.repo';
-import { ClientManager } from '../domain/ClientManager';
-import { NotificationRepo } from '../domain/notification';
-import { SensorRepo } from '../domain/sensor/sensor';
-import { SensorReadEvent } from '../domain/sensor/sensorReadEvent';
-import { LimitCheckMiddleware } from '../domain/sensor/sensorReadEvent/middleware';
+import { LimitCheckMiddleware } from '../domain/LimitChecker';
+import { NotificationRepo } from '../domain/Notification';
+import { SensorReadEvent } from '../domain/SensorReadEvent';
+import { ClientManager } from './gateways/ClientManager';
+import { ReadEventRepo } from './repos/ReadEventRepo';
+import { SensorRepo } from './repos/SensorRepo';
 
 export class ProcessReadEventUseCase {
   sensorRepo: SensorRepo;
@@ -29,10 +29,10 @@ export class ProcessReadEventUseCase {
     this.readEventRepo = readEventRepo;
   }
 
-  execute(event: SensorReadEvent) {
-    const processingSensor = this.sensorRepo.getById(event.sensorId);
+  async execute(event: SensorReadEvent) {
+    const processingSensor = await this.sensorRepo.getById(event.sensorId);
     processingSensor.processReadEvent(event);
-    this.sensorRepo.saveSensor(processingSensor);
+    await this.sensorRepo.saveSensor(processingSensor);
 
     this.readEventRepo.storeEvent(event);
 

@@ -1,4 +1,4 @@
-import { Sensor } from './sensor';
+import { Sensor } from './Sensor';
 
 describe('Test Sensor domain logic', () => {
   let testSensor: Sensor;
@@ -13,24 +13,22 @@ describe('Test Sensor domain logic', () => {
   });
 
   it('Sensor should handle event correctly', () => {
-    const readTimestamp = new Date().toISOString();
     testSensor.processReadEvent({
       sensorId: 1,
+      readTimestamp: new Date().toISOString(),
       sensorValue: {
-        readTimestamp: readTimestamp,
         humidity: 1,
         temperature: 1,
         lightIntensity: 1,
-        windSpeed: 1,
+        earthMoisture: 1,
       },
     });
 
     expect(testSensor.getReadValue()).toStrictEqual({
-      readTimestamp: readTimestamp,
       humidity: 1,
       temperature: 1,
       lightIntensity: 1,
-      windSpeed: 1,
+      earthMoisture: 1,
     });
   });
 
@@ -38,23 +36,23 @@ describe('Test Sensor domain logic', () => {
     const basedEventTimestamp = new Date().toISOString();
     const basedEvent = {
       sensorId: 1,
+      readTimestamp: basedEventTimestamp,
       sensorValue: {
-        readTimestamp: basedEventTimestamp,
         humidity: 1,
         temperature: 1,
         lightIntensity: 1,
-        windSpeed: 1,
+        earthMoisture: 1,
       },
     };
 
     const unmatchedEvent = {
       sensorId: 2,
+      readTimestamp: new Date().toISOString(),
       sensorValue: {
-        readTimestamp: new Date().toISOString(),
         humidity: 2,
         temperature: 2,
         lightIntensity: 2,
-        windSpeed: 2,
+        earthMoisture: 2,
       },
     };
 
@@ -66,12 +64,7 @@ describe('Test Sensor domain logic', () => {
       humidity: 1,
       temperature: 1,
       lightIntensity: 1,
-      windSpeed: 1,
+      earthMoisture: 1,
     });
-
-    // expect(testSensor.getHumidity()).toEqual(1);
-    // expect(testSensor.getTemperature()).toEqual(1);
-    // expect(testSensor.getLightIntensity()).toEqual(1);
-    // expect(testSensor.getWindSpeed()).toEqual(1);
   });
 });

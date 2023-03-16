@@ -1,5 +1,5 @@
-import { SensorReadEvent } from './sensorReadEvent';
-import { SensorValue } from './sensorValue';
+import { SensorReadEvent } from './SensorReadEvent';
+import { SensorValue } from './SensorValue';
 
 interface GeoLocation {
   longitude: number;
@@ -16,6 +16,7 @@ class Sensor {
 
   private setupLocation: GeoLocation;
 
+  private lastReadTimestamp: string;
   private readValue: SensorValue;
 
   constructor(newId: number, name: string) {
@@ -31,17 +32,17 @@ class Sensor {
     temperature: number,
     humidity: number,
     lightIntensity: number,
-    windSpeed: number
+    earthMoisture: number
   ): Sensor {
     const sensor = new Sensor(id, name);
     sensor.setupLocation = setupLocation;
+    sensor.lastReadTimestamp = lastReadTimestamp;
 
     sensor.readValue = {
-      readTimestamp: lastReadTimestamp,
       temperature: temperature,
       humidity: humidity,
       lightIntensity: lightIntensity,
-      windSpeed: windSpeed,
+      earthMoisture: earthMoisture,
     };
 
     return sensor;
@@ -76,23 +77,10 @@ class Sensor {
   public getSetupLocation(): GeoLocation {
     return this.setupLocation;
   }
+
+  public getLastReadTimestamp(): string {
+    return this.lastReadTimestamp;
+  }
 }
 
-interface SensorRepo {
-  saveSensor(sensor: Sensor);
-
-  /**
-   *
-   * @throws {SensorIdNotFound}
-   */
-  getById(id: number): Sensor;
-  /**
-   *
-   * @throws {PageOutOfRange}
-   */
-  getByPage(pageNum: number): Sensor[];
-
-  getNextId(): SensorId;
-}
-
-export { GeoLocation, Sensor, SensorId, SensorRepo };
+export { GeoLocation, Sensor, SensorId };
