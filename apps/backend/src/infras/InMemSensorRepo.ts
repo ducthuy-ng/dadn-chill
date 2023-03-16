@@ -1,22 +1,22 @@
-import { PageOutOfRange, SensorIdNotFound } from '../core/domain/sensor/exception';
-import { Sensor, SensorId, SensorRepo } from '../core/domain/sensor/sensor';
+import { SensorId, Sensor } from '../core/domain/Sensor';
+import { PageOutOfRange, SensorIdNotFound, SensorRepo } from '../core/usecases/repos/SensorRepo';
 
 export class InMemSensorRepo implements SensorRepo {
   private sensorMap = new Map<SensorId, Sensor>();
   private pageSize = 10;
 
-  saveSensor(sensor: Sensor) {
+  async saveSensor(sensor: Sensor): Promise<void> {
     this.sensorMap.set(sensor.getId(), sensor);
   }
 
-  getById(id: SensorId): Sensor {
+  async getById(id: number): Promise<Sensor> {
     const sensor = this.sensorMap.get(id);
     if (sensor === undefined) throw new SensorIdNotFound(id);
 
     return sensor;
   }
 
-  getByPage(pageNum: number): Sensor[] {
+  async getByPage(pageNum: number): Promise<Sensor[]> {
     if (pageNum * this.pageSize > this.sensorMap.size) {
       throw new PageOutOfRange(pageNum);
     }
@@ -30,7 +30,11 @@ export class InMemSensorRepo implements SensorRepo {
     return sensorSliceToPageSize;
   }
 
-  getNextId(): number {
-    throw new Error('Method not implemented.');
+  async getNextId(): Promise<number> {
+    return 1;
+  }
+
+  async deleteById(id: number): Promise<void> {
+    this.sensorMap.delete(id);
   }
 }

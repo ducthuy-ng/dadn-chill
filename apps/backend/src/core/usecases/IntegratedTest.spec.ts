@@ -10,6 +10,7 @@ import { SensorIdNotFound } from './repos/SensorRepo';
 import { ReadEventRepo } from './repos/ReadEventRepo';
 
 class MockClientManager implements ClientManager {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   changeClientSubscription(clientId: string, sensorIdx: number[]): void {
     throw new Error('Method not implemented.');
   }
@@ -40,7 +41,7 @@ class MockClientManager implements ClientManager {
 
 class MockReadEventRepo implements ReadEventRepo {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  storeEvent = jest.fn(async(event: SensorReadEvent) => {
+  storeEvent = jest.fn(async (event: SensorReadEvent) => {
     return;
   });
 }
