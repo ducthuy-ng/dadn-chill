@@ -7,6 +7,7 @@ services:
       - '5432:5432'
     volumes:
       - postgres-volume:/var/lib/postgresql/data
+      - ./apps/backend/data:/docker-entrypoint-initdb.d:ro
     environment:
       - POSTGRES_USER=backend
       - POSTGRES_PASSWORD=password
@@ -37,6 +38,7 @@ services:
 volumes:
   kafka-volume:
   postgres-volume:
+
 
 networks:
   kafka-network:
