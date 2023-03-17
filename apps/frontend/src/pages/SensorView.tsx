@@ -71,7 +71,6 @@ const noti = [
 const COLORS = ['#0088FE', '#FF8042', '#00C49F'];
 
 export default function SensorView() {
-
   return (
     <div className="px-4 ">
       <div className="flex justify-between p-2">

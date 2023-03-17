@@ -1,12 +1,13 @@
-import { useAtom } from "jotai";
-import { sidebar } from "../store";
-
+import { useAtom } from 'jotai';
+import { sidebar } from '../store';
 
 export default function Sidebar() {
-  const [show,setShow] = useAtom(sidebar)
+  const [show, setShow] = useAtom(sidebar);
   return (
     <div
-      className={`fixed top-0 left-0 z-40 h-screen w-64 overflow-y-auto bg-white p-4 transition-transform dark:bg-gray-800 ${show ? "" : "-translate-x-full"}` }
+      className={`fixed top-0 left-0 z-40 h-screen w-64 overflow-y-auto bg-white p-4 transition-transform dark:bg-gray-800 ${
+        show ? '' : '-translate-x-full'
+      }`}
       tabIndex={-1}
     >
       <h5

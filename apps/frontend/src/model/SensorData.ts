@@ -8,7 +8,7 @@ export type SensorMetadata = {
 };
 
 export type SensorTimeSeriesData = {
-  id: string
+  id: string;
   time: string;
   temperature: number;
   humidity: number;
