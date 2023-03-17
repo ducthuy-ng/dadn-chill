@@ -18,7 +18,7 @@ jobs:
         run: npm ci
 
       - name: Test backend
-        run: npm run cicd:test:backend
+        run: npm run test:backend
 
       - name: Lint check (frontend)
         run: npx nx lint frontend

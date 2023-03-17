@@ -3,7 +3,7 @@ import { SensorReadEvent } from '../core/domain/SensorReadEvent';
 import { KafkaEventMQ } from './KafkaEventMQ';
 import { sleep } from './testingTools';
 
-jest.setTimeout(10000);
+jest.setTimeout(15000);
 
 describe('Kafka event MQ testing', () => {
   const testKafkaBrokers = ['localhost:9092'];
@@ -40,7 +40,7 @@ describe('Kafka event MQ testing', () => {
       topics: [{ topic: testTopicName }],
     });
     await admin.disconnect();
-    await sleep(2);
+    await sleep(1);
   });
 
   afterAll(async () => {
@@ -49,7 +49,7 @@ describe('Kafka event MQ testing', () => {
       topics: [testTopicName],
     });
     await admin.disconnect();
-    await sleep(2);
+    await sleep(1);
   });
 
   test('Test isSensorReadEvent checker', () => {

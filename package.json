@@ -10,8 +10,7 @@
     "stop:backend": "sh -c './bin/stop-dev-backend.sh'",
     "lint": "npx nx lint frontend; npx nx lint backend",
     "format": "npx nx format:write --all",
-    "test:backend": "npx nx test backend",
-    "cicd:test:backend": "npx nx test backend --verbose",
+    "test:backend": "sh -c ./bin/test-backend.sh",
     "clean:dev": "sh -c './bin/clean-dev.sh'"
   },
   "private": true,
