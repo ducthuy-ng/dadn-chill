@@ -69,7 +69,14 @@ export class PGRepository implements SensorRepo, ReadEventRepo {
   }
 
   async getByPage(pageNum: number): Promise<Sensor[]> {
-    throw new Error('Method not implemented.');
+    const result = await this.connectionPool.query(
+      'SELECT * FROM data_pipeline.sensor LIMIT $1 OFFSET $2 ROWS;',
+      [PGRepository.pageSize, (pageNum - 1) * PGRepository.pageSize]
+    );
+
+    const sensorList = result.rows.map(this.convertDtoToSensor);
+
+    return sensorList;
   }
 
   async getNextId(): Promise<SensorId> {

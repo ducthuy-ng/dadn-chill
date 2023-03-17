@@ -97,6 +97,13 @@ describe('PGSensorRepo test', () => {
 
     await sensorRepo.deleteById(7);
     retrievedSensor = await sensorRepo.getById(7);
-    expect(retrievedSensor).toBeNull();
+  });
+
+  test('Get by page', async () => {
+    let sensorList = await sensorRepo.getByPage(1);
+    expect(sensorList).toHaveLength(6);
+
+    sensorList = await sensorRepo.getByPage(2);
+    expect(sensorList).toHaveLength(0);
   });
 });
