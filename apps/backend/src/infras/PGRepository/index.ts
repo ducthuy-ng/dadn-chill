@@ -53,7 +53,7 @@ export class PGRepository implements SensorRepo, ReadEventRepo {
       object['temperature'],
       object['humidity'],
       object['light_intensity'],
-      object['wind_speed']
+      object['earth_moisture']
     );
   }
 
@@ -69,16 +69,19 @@ export class PGRepository implements SensorRepo, ReadEventRepo {
   }
 
   async getByPage(pageNum: number): Promise<Sensor[]> {
-    throw new Error(`Method not implemented: ${pageNum}`);
+    const result = await this.connectionPool.query(
+      'SELECT * FROM data_pipeline.sensor LIMIT $1 OFFSET $2 ROWS;',
+      [PGRepository.pageSize, (pageNum - 1) * PGRepository.pageSize]
+    );
+
+    const sensorList = result.rows.map(this.convertDtoToSensor);
+
+    return sensorList;
   }
 
   async getNextId(): Promise<SensorId> {
     const result = await this.connectionPool.query("SELECT nextval('id_sequence') AS next_id;");
-
-    console.log(result.rows);
-
-    // if (result.rowCount !== 1) return NaN;
-
+    if (result.rowCount !== 1) return NaN;
     return parseInt(result.rows[0]['next_id']);
   }
 

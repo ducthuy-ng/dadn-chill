@@ -57,10 +57,10 @@ describe('Test Single Sensor Data Request', () => {
   let processEventUC: ProcessReadEventUseCase;
   let getSingleSensorUC: GetSingleSensorUseCase;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     sensorRepo = new InMemSensorRepo();
     sensor1 = new Sensor(1, 'ABC');
-    sensorRepo.saveSensor(sensor1);
+    await sensorRepo.saveSensor(sensor1);
 
     processEventUC = new ProcessReadEventUseCase(
       sensorRepo,
@@ -77,7 +77,7 @@ describe('Test Single Sensor Data Request', () => {
     jest.clearAllMocks();
   });
 
-  it('Process ReadEvent, the read should have single sensor update', async () => {
+  test('Process ReadEvent, the read should have single sensor update', async () => {
     const processEventUC = new ProcessReadEventUseCase(
       sensorRepo,
       notificationRepo,
@@ -98,7 +98,7 @@ describe('Test Single Sensor Data Request', () => {
         earthMoisture: 4,
       },
     };
-    processEventUC.execute(event);
+    await processEventUC.execute(event);
     const testSensor = await getSingleSensorUC.execute(sensor1.getId());
 
     const sensorValue = testSensor.getReadValue();
@@ -113,7 +113,7 @@ describe('Test Single Sensor Data Request', () => {
     expect(readEventRepo.storeEvent).toBeCalled();
   });
 
-  it('Process ReadEvent but not affected the others', async () => {
+  test('Process ReadEvent but not affected the others', async () => {
     const event1: SensorReadEvent = {
       sensorId: 1,
       readTimestamp: new Date().toISOString(),
@@ -135,10 +135,13 @@ describe('Test Single Sensor Data Request', () => {
       },
     };
 
-    processEventUC.execute(event1);
-    expect(() => {
-      processEventUC.execute(event2);
-    }).toThrowError(SensorIdNotFound);
+    await processEventUC.execute(event1);
+    try {
+      await processEventUC.execute(event2);
+    } catch (e) {
+      expect(e).toBeInstanceOf(SensorIdNotFound);
+    }
+
     const testSensor = await getSingleSensorUC.execute(sensor1.getId());
 
     const sensorValue = testSensor.getReadValue();

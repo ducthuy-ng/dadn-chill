@@ -33,10 +33,9 @@ describe('Test Sensor domain logic', () => {
   });
 
   it('Unmatched event should be ignored', () => {
-    const basedEventTimestamp = new Date().toISOString();
     const basedEvent = {
       sensorId: 1,
-      readTimestamp: basedEventTimestamp,
+      readTimestamp: new Date().toISOString(),
       sensorValue: {
         humidity: 1,
         temperature: 1,
@@ -60,7 +59,6 @@ describe('Test Sensor domain logic', () => {
     testSensor.processReadEvent(unmatchedEvent);
 
     expect(testSensor.getReadValue()).toStrictEqual({
-      readTimestamp: basedEventTimestamp,
       humidity: 1,
       temperature: 1,
       lightIntensity: 1,

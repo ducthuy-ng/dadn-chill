@@ -34,7 +34,7 @@ export class ProcessReadEventUseCase {
     processingSensor.processReadEvent(event);
     await this.sensorRepo.saveSensor(processingSensor);
 
-    this.readEventRepo.storeEvent(event);
+    await this.readEventRepo.storeEvent(event);
 
     const notificationList = this.middleware.check(event, processingSensor);
     this.notificationRepo.add(...notificationList);
