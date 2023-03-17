@@ -10,8 +10,7 @@
     "stop:backend": "sh -c './bin/stop-dev-backend.sh'",
     "lint": "npx nx lint frontend; npx nx lint backend",
     "format": "npx nx format:write --all",
-    "test:backend": "npx nx test backend",
-    "cicd:test:backend": "npx nx test backend --verbose",
+    "test:backend": "sh -c ./bin/test-backend.sh",
     "clean:dev": "sh -c './bin/clean-dev.sh'"
   },
   "private": true,
@@ -75,6 +74,8 @@
   },
   "dependencies": {
     "express": "^4.18.1",
+    "jotai": "^2.0.3",
+    "moment": "^2.29.4",
     "kafkajs": "^2.2.4",
     "leaflet": "^1.9.3",
     "pg": "^8.10.0",
@@ -83,6 +84,7 @@
     "react-icons": "^4.7.1",
     "react-leaflet": "^4.2.1",
     "react-router-dom": "6.4.3",
+    "recharts": "^2.4.3",
     "tslib": "^2.3.0"
   }
 }

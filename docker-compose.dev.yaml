@@ -39,6 +39,5 @@ volumes:
   kafka-volume:
   postgres-volume:
 
-
 networks:
   kafka-network:

@@ -1,73 +1,79 @@
 import { LatLngExpression, Map } from 'leaflet';
 import { useCallback, useEffect, useState } from 'react';
 import { FaCaretLeft, FaCaretRight, FaEye } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 import MapEngine from '../components/Map';
 import { SensorData } from '../model/SensorData';
 
 const sensorDummyData: SensorData[] = [
   {
-    id: 1,
+    id: 'sensor-001',
     name: 'Cảm biến 1',
     connected: true,
     temperature: 1,
     humidity: 1,
     lux: 1,
-    windSpeed: 1,
-
+    moist: 1,
+    time: new Date().toISOString(),
     location: [10.552493, 106.873474],
   },
   {
-    id: 2,
+    id: 'sensor-002',
     name: 'Cảm biến 2',
     connected: false,
     temperature: 1,
     humidity: 1,
     lux: 1,
-    windSpeed: 1,
+    moist: 1,
+    time: new Date().toISOString(),
 
     location: [10.5390624, 106.879069],
   },
   {
-    id: 3,
+    id: 'sensor-003',
     name: 'Cảm biến 3',
     connected: false,
     temperature: 1,
     humidity: 1,
     lux: 1,
-    windSpeed: 1,
+    moist: 1,
+    time: new Date().toISOString(),
 
     location: [10.5257651, 106.8480182],
   },
   {
-    id: 4,
+    id: 'sensor-004',
     name: 'Cảm biến 4',
     connected: true,
     temperature: 1,
     humidity: 1,
     lux: 1,
-    windSpeed: 1,
+    moist: 1,
+    time: new Date().toISOString(),
 
     location: [10.5122799, 106.7979179],
   },
   {
-    id: 5,
+    id: 'sensor-006',
     name: 'Cảm biến 5',
     connected: true,
     temperature: 1,
     humidity: 1,
     lux: 1,
-    windSpeed: 1,
+    moist: 1,
+    time: new Date().toISOString(),
 
     location: [10.478189, 106.839396],
   },
   {
-    id: 6,
+    id: 'sensor-007',
     name: 'Cảm biến 6',
     connected: false,
     temperature: 2,
     humidity: 3,
     lux: 1,
-    windSpeed: 0,
+    moist: 0,
+    time: new Date().toISOString(),
 
     location: [10.4792, 106.8984],
   },
@@ -133,7 +139,7 @@ export default function HomePage() {
                 <th className="py-2">Nhiệt độ</th>
                 <th className="py-2">Độ ẩm</th>
                 <th className="py-2">Ánh sáng</th>
-                <th className="py-2">Tốc độ gió</th>
+                <th className="py-2">Độ ẩm đất</th>
                 <th className="py-2">&nbsp;</th>
               </tr>
             </thead>
@@ -155,9 +161,11 @@ export default function HomePage() {
                   <td className="py-2 text-center">{sensorData.temperature}</td>
                   <td className="py-2 text-center">{sensorData.humidity}</td>
                   <td className="py-2 text-center">{sensorData.lux}</td>
-                  <td className="py-2 text-center">{sensorData.windSpeed}</td>
+                  <td className="py-2 text-center">{sensorData.moist}</td>
                   <td className="py-2 text-center">
-                    <FaEye />
+                    <Link to={`/${sensorData.id}`}>
+                      <FaEye />
+                    </Link>
                   </td>
                 </tr>
               ))}
@@ -180,6 +188,7 @@ export default function HomePage() {
             setMap={setMap}
             data={sensorDummyData.map((el) => ({
               id: el.id,
+              name: el.name,
               connected: el.connected,
               location: el.location,
             }))}

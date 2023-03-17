@@ -1,6 +1,4 @@
 import { createContext, useState } from 'react';
-import { FaArrowLeft } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
 import { NotificationItem } from '../components/NotificationItem';
 import { Notification } from '../core/Notification';
 
@@ -102,18 +100,19 @@ function fetchAllNotifications(): Notification[] {
 export const NotificationPageContext = createContext(-1);
 
 export default function NotificationsPage() {
+  // navigation
   const notifications: Notification[] = fetchAllNotifications();
 
   const [selectedNotiId, setSelectedNotiId] = useState<number>(-1);
 
   return (
     <div className="p-4">
-      <Link to={'/'} className="inline-block">
+      {/* <Link to={'/'} className="inline-block">
         <span className="flex items-center gap-x-1 hover:text-blue-500">
           <FaArrowLeft className="text-xl" />
           <div>Quay về trang chủ</div>
         </span>
-      </Link>
+      </Link> */}
 
       <h1 className="my-4 text-4xl">Thông báo đã nhận</h1>
 

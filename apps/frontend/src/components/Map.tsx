@@ -1,23 +1,18 @@
-import { LatLngExpression, Map } from 'leaflet';
+import { Map } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Ref } from 'react';
 import { Circle, MapContainer, TileLayer, Tooltip } from 'react-leaflet';
+import { SensorMetadata } from '../model/SensorData';
 
 // metadata
 const TILE_LAYER_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 const TILE_LAYER_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
-type DeviceLocation = {
-  id: number;
-  connected: boolean;
-  location: LatLngExpression;
-};
-
 interface MapProps {
-  setMap: Ref<Map> | undefined;
+  data: SensorMetadata[];
   className: string;
-  data: DeviceLocation[];
+  setMap?: Ref<Map> | undefined;
 }
 
 export default function MapEngine(props: MapProps) {
@@ -40,7 +35,7 @@ export default function MapEngine(props: MapProps) {
           radius={200}
         >
           <Tooltip direction="top" offset={[0, -10]} opacity={1}>
-            <p>{item.id}</p>
+            <p>{item.name}</p>
             <p>{item.location.toString()}</p>
           </Tooltip>
         </Circle>
