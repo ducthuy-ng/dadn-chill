@@ -69,7 +69,7 @@ export class PGRepository implements SensorRepo, ReadEventRepo {
   }
 
   async getByPage(pageNum: number): Promise<Sensor[]> {
-    throw new Error('Method not implemented.');
+    throw new Error(`Method not implemented: ${pageNum}`);
   }
 
   async getNextId(): Promise<SensorId> {

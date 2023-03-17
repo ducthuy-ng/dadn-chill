@@ -4,7 +4,7 @@
  */
 
 import { exit } from 'process';
-import { ExpressServer } from './infras/ExpressServer';
+// import { ExpressServer } from './infras/ExpressServer';
 import { KafkaEventMQ } from './infras/KafkaEventMQ';
 
 if (process.env.KAFKA_BROKERS === null) {
