@@ -1,15 +1,34 @@
 import { InMemNotificationRepo } from '../../infras/InMemNotificationRepo';
 import { InMemSensorRepo } from '../../infras/InMemSensorRepo';
-import { ReadEventRepo } from '../domain/analysis/ReadEvent.repo';
-import { ClientManager } from '../domain/ClientManager';
-import { SensorIdNotFound } from '../domain/sensor/exception';
-import { Sensor } from '../domain/sensor/sensor';
-import { SensorReadEvent } from '../domain/sensor/sensorReadEvent';
-import { SkipCheck } from '../domain/sensor/sensorReadEvent/middleware/SkipCheck';
+import { SkipCheck } from '../domain/LimitChecker/SkipCheck';
+import { Sensor } from '../domain/Sensor';
+import { ClientId, ClientManager } from './gateways/ClientManager';
+import { SensorReadEvent } from '../domain/SensorReadEvent';
 import { GetSingleSensorUseCase } from '../usecases/GetSingleSensor';
 import { ProcessReadEventUseCase } from './ProcessReadEvent';
+import { SensorIdNotFound } from './repos/SensorRepo';
+import { ReadEventRepo } from './repos/ReadEventRepo';
 
 class MockClientManager implements ClientManager {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  changeClientSubscription(clientId: string, sensorIdx: number[]): void {
+    throw new Error('Method not implemented.');
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  openConnectionToClient(id: string): void {
+    return;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  closeConnectionToClient(id: string): void {
+    return;
+  }
+
+  generateNewClientId(): ClientId {
+    return;
+  }
+
   propagateNotifications = jest.fn(() => {
     return;
   });
@@ -22,7 +41,7 @@ class MockClientManager implements ClientManager {
 
 class MockReadEventRepo implements ReadEventRepo {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  storeEvent = jest.fn((event: SensorReadEvent) => {
+  storeEvent = jest.fn(async (event: SensorReadEvent) => {
     return;
   });
 }
@@ -58,7 +77,7 @@ describe('Test Single Sensor Data Request', () => {
     jest.clearAllMocks();
   });
 
-  it('Process ReadEvent, the read should have single sensor update', () => {
+  it('Process ReadEvent, the read should have single sensor update', async () => {
     const processEventUC = new ProcessReadEventUseCase(
       sensorRepo,
       notificationRepo,
@@ -71,48 +90,48 @@ describe('Test Single Sensor Data Request', () => {
 
     const event: SensorReadEvent = {
       sensorId: 1,
+      readTimestamp: new Date().toISOString(),
       sensorValue: {
-        readTimestamp: new Date().toISOString(),
         temperature: 1,
         humidity: 2,
         lightIntensity: 3,
-        windSpeed: 4,
+        earthMoisture: 4,
       },
     };
     processEventUC.execute(event);
-    const testSensor = getSingleSensorUC.execute(sensor1.getId());
+    const testSensor = await getSingleSensorUC.execute(sensor1.getId());
 
     const sensorValue = testSensor.getReadValue();
 
     expect(sensorValue.temperature).toEqual(1);
     expect(sensorValue.humidity).toEqual(2);
     expect(sensorValue.lightIntensity).toEqual(3);
-    expect(sensorValue.windSpeed).toEqual(4);
+    expect(sensorValue.earthMoisture).toEqual(4);
 
     expect(clientManager.propagateSensorReadEvent).toBeCalled();
     expect(clientManager.propagateNotifications).toBeCalled();
     expect(readEventRepo.storeEvent).toBeCalled();
   });
 
-  it('Process ReadEvent but not affected the others', () => {
+  it('Process ReadEvent but not affected the others', async () => {
     const event1: SensorReadEvent = {
       sensorId: 1,
+      readTimestamp: new Date().toISOString(),
       sensorValue: {
-        readTimestamp: new Date().toISOString(),
         temperature: 1,
         humidity: 2,
         lightIntensity: 3,
-        windSpeed: 4,
+        earthMoisture: 4,
       },
     };
     const event2: SensorReadEvent = {
       sensorId: 2,
+      readTimestamp: new Date().toISOString(),
       sensorValue: {
-        readTimestamp: new Date().toISOString(),
         temperature: 100,
         humidity: 100,
         lightIntensity: 100,
-        windSpeed: 100,
+        earthMoisture: 100,
       },
     };
 
@@ -120,13 +139,13 @@ describe('Test Single Sensor Data Request', () => {
     expect(() => {
       processEventUC.execute(event2);
     }).toThrowError(SensorIdNotFound);
-    const testSensor = getSingleSensorUC.execute(sensor1.getId());
+    const testSensor = await getSingleSensorUC.execute(sensor1.getId());
 
     const sensorValue = testSensor.getReadValue();
     expect(sensorValue.temperature).toEqual(1);
     expect(sensorValue.humidity).toEqual(2);
     expect(sensorValue.lightIntensity).toEqual(3);
-    expect(sensorValue.windSpeed).toEqual(4);
+    expect(sensorValue.earthMoisture).toEqual(4);
 
     expect(clientManager.propagateSensorReadEvent).toBeCalledTimes(1);
     expect(clientManager.propagateNotifications).toBeCalledTimes(1);

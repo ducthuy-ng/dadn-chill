@@ -3,19 +3,25 @@
  * This is only a minimal backend to get started.
  */
 
-import express from 'express';
-import * as path from 'path';
+import { exit } from 'process';
+import { ExpressServer } from './infras/ExpressServer';
+import { KafkaEventMQ } from './infras/KafkaEventMQ';
 
-const app = express();
+if (process.env.KAFKA_BROKERS === null) {
+  console.error(`"KAFKA_BROKERS" is not defined`);
+  exit(1);
+}
+const kafkaBrokers = process.env.KAFKA_BROKERS.split(',');
+const eventMQ = new KafkaEventMQ(kafkaBrokers, 'test-topic');
 
-app.use('/assets', express.static(path.join(__dirname, 'assets')));
-
-app.get('/api', (req, res) => {
-  res.send({ message: 'Welcome to backend!' });
+eventMQ.onNewEvent((event) => {
+  console.log(event);
 });
 
-const port = process.env.PORT || 3333;
-const server = app.listen(port, () => {
-  console.log(`Listening at http://localhost:${port}/api`);
-});
-server.on('error', console.error);
+eventMQ.startListening();
+
+async function closingServer() {
+  await eventMQ.stopListening();
+}
+
+process.once('SIGINT', closingServer);

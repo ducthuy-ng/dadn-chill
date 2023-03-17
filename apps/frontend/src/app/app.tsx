@@ -9,8 +9,11 @@ import Sidebar from '../components/Sidebar';
 import { sidebar } from '../store';
 import { useAtom } from 'jotai';
 
+
+
 export function App() {
   const [show] = useAtom(sidebar)
+
   return (
     <>
       <Sidebar />
@@ -30,8 +33,8 @@ export function App() {
         <Navbar />
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/notifications" element={<NotificationsPage />}></Route>
-          <Route path="/sensor" element={<SensorView />} />
+          <Route path="/notifications" element={<NotificationsPage />}/>
+          <Route path={"/:sensorId"} element={<SensorView />} />
           <Route
             path="/page-2"
             element={

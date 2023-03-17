@@ -1,19 +1,19 @@
 import { LatLngExpression } from 'leaflet';
 
-export type MapData = {
-  id: number;
+export type SensorMetadata = {
+  id: string;
+  name: string;
   connected: boolean;
   location: LatLngExpression;
 };
 
-export type SensorData = {
-  id: number;
-  name: string;
-  connected: boolean;
+export type SensorTimeSeriesData = {
+  id: string
+  time: string;
   temperature: number;
   humidity: number;
   lux: number;
-  windSpeed: number;
-
-  location: LatLngExpression;
+  moist: number;
 };
+
+export type SensorData = SensorMetadata & SensorTimeSeriesData;

@@ -1,5 +1,6 @@
-import { Notification, NotificationRepo } from '../core/domain/notification';
-import { PageOutOfRange } from '../core/domain/sensor/exception';
+import { NotificationRepo } from '../core/domain/Notification';
+import { PageOutOfRange } from '../core/usecases/repos/SensorRepo';
+import { Notification } from '../core/domain/Notification';
 
 export class InMemNotificationRepo implements NotificationRepo {
   private notificationList: Notification[] = [];
