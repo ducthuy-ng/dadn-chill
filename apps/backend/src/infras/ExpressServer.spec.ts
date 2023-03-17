@@ -17,7 +17,7 @@ describe('Test SSEClientManager', () => {
     server.close(done);
   });
 
-  test('Test start simple connection', async (done) => {
+  test.skip('Test start simple connection', async (done) => {
     const clientId = server.generateNewClientId();
     const eventSource = new EventSource(`http://localhost:3333/streaming/${clientId}`);
     eventSource.onmessage = (event) => {

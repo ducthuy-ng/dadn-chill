@@ -1,15 +1,20 @@
+import { Pool } from 'pg';
 import { PGRepository } from '.';
 import { Sensor } from '../../core/domain/Sensor';
 
 describe('PGSensorRepo test', () => {
   let sensorRepo: PGRepository;
+  const PgConnString = 'postgresql://backend:password@localhost:5432/backend';
 
   beforeAll(async () => {
-    sensorRepo = new PGRepository('postgresql://backend:password@localhost:5432/backend', false);
+    sensorRepo = new PGRepository(PgConnString, false);
   });
 
   afterAll(async () => {
     await sensorRepo.disconnect();
+    const pool = new Pool({ connectionString: PgConnString });
+    await pool.query("SELECT setval('id_sequence', 7, false)");
+    await pool.end();
   });
 
   test('Get existing sensor by ID', async () => {

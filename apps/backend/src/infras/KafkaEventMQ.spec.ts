@@ -1,10 +1,7 @@
 import { Kafka, logLevel } from 'kafkajs';
 import { SensorReadEvent } from '../core/domain/SensorReadEvent';
 import { KafkaEventMQ } from './KafkaEventMQ';
-
-async function sleep(seconds: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
-}
+import { sleep } from './testingTools';
 
 jest.setTimeout(10000);
 
@@ -43,6 +40,7 @@ describe('Kafka event MQ testing', () => {
       topics: [{ topic: testTopicName }],
     });
     await admin.disconnect();
+    await sleep(2);
   });
 
   afterAll(async () => {
@@ -51,6 +49,7 @@ describe('Kafka event MQ testing', () => {
       topics: [testTopicName],
     });
     await admin.disconnect();
+    await sleep(2);
   });
 
   test('Test isSensorReadEvent checker', () => {
@@ -82,7 +81,6 @@ describe('Kafka event MQ testing', () => {
 
     await sleep(2);
 
-    // expect(storeEvent).toBeCalledTimes(2);
     expect(receivedMessages).toContainEqual(event1);
     expect(receivedMessages).toContainEqual(event2);
 
