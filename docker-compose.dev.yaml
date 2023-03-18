@@ -11,6 +11,7 @@ services:
     environment:
       - POSTGRES_USER=backend
       - POSTGRES_PASSWORD=password
+
   kafka1:
     image: bitnami/kafka:3.4.0
     ports:
@@ -35,9 +36,19 @@ services:
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=KRAFT_LISTENER:PLAINTEXT,CONTROLLER:PLAINTEXT,CONSUMER:PLAINTEXT
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CONTROLLER
 
+  mqtt:
+    image: eclipse-mosquitto:2.0.15
+    ports:
+      - '1883:1883'
+    volumes:
+      - mqtt-volume:/mosquitto/data
+      - mqtt-volume:/mosquitto/log
+      - ./docker/mosquitto.conf:/mosquitto/config/mosquitto.conf
+
 volumes:
   kafka-volume:
   postgres-volume:
+  mqtt-volume:
 
 networks:
   kafka-network:
