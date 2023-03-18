@@ -10,7 +10,10 @@ import {
   ClientIdNotFound,
   ClientManager,
 } from '../../core/usecases/gateways/ClientManager';
+import { Logger } from '../../core/usecases/Logger';
 import { PageOutOfRange } from '../../core/usecases/repos/SensorRepo';
+
+import cors from 'cors';
 
 import { ErrorMsg } from './ErrorMsg';
 import { GenerateDto, SensorDto } from './SensorDto';
@@ -30,12 +33,18 @@ export class ExpressServer implements ClientManager {
   private getSingleSensorUC: GetSingleSensorUseCase;
   private getSensorListUC: GetSensorListUseCase;
 
+  private logger: Logger;
+
   constructor(
     listeningPort = 3333,
     getSingleSensorUC: GetSingleSensorUseCase,
-    getSensorListUC: GetSensorListUseCase
+    getSensorListUC: GetSensorListUseCase,
+    logger: Logger,
+    frontendEndpoint = 'localhost:4200'
   ) {
     this.app = express();
+
+    this.setupCORS(frontendEndpoint);
     this.setupRestRouter();
     // this.setupClientManagerRoute();
 
@@ -45,6 +54,16 @@ export class ExpressServer implements ClientManager {
 
     this.getSingleSensorUC = getSingleSensorUC;
     this.getSensorListUC = getSensorListUC;
+
+    this.logger = logger;
+  }
+
+  private setupCORS(frontendEndpoint: string) {
+    this.app.use(
+      cors({
+        origin: frontendEndpoint,
+      })
+    );
   }
 
   private setupRestRouter() {
@@ -56,12 +75,15 @@ export class ExpressServer implements ClientManager {
   }
 
   private handleGetSensorList: RequestHandler<null, SensorDto[] | ErrorMsg> = async (req, res) => {
-    const pageNum = parseInt(req.query.pageNum.toString());
+    let pageNum = parseInt(String(req.query.pageNum));
 
-    if (isNaN(pageNum) || pageNum <= 0) {
+    if (isNaN(pageNum)) pageNum = 1;
+    this.logger.info('/sensors', pageNum);
+
+    if (pageNum <= 0) {
       res.status(400).json({
         name: 'InvalidPageNum',
-        detail: 'pageNum should be a valid number',
+        detail: 'pageNum should be greater than zero',
       });
       return;
     }
@@ -69,7 +91,6 @@ export class ExpressServer implements ClientManager {
     try {
       const sensors = await this.getSensorListUC.execute(pageNum);
       const sensorDtoList = sensors.map((sensor) => GenerateDto(sensor));
-
       res.json(sensorDtoList);
     } catch (err) {
       if (err instanceof PageOutOfRange)
@@ -113,9 +134,11 @@ export class ExpressServer implements ClientManager {
 
   startListening() {
     this.server = this.app.listen(this.listeningPort);
+    this.logger.info(`Start listening at port: ${this.listeningPort}`);
   }
 
   stopListening() {
+    this.logger.info(`Shutting down`);
     this.server.close();
   }
 
