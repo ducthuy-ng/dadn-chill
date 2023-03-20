@@ -18,7 +18,7 @@ export class BSLogger implements Logger {
       context: {
         application: BSLogger.ApplicationName,
         namespace: namespace,
-        logLevel: BSLogger[level],
+        logLevel: BSLogger.LogLevelMapping[level],
       },
       targets: target,
     });
