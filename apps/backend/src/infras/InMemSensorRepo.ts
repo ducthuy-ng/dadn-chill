@@ -17,14 +17,14 @@ export class InMemSensorRepo implements SensorRepo {
   }
 
   async getByPage(pageNum: number): Promise<Sensor[]> {
-    if (pageNum * this.pageSize > this.sensorMap.size) {
+    if ((pageNum - 1) * this.pageSize > this.sensorMap.size) {
       throw new PageOutOfRange(pageNum);
     }
 
     const sensorArray = Array.from(this.sensorMap.values());
     const sensorSliceToPageSize = sensorArray.slice(
-      pageNum * this.pageSize,
-      pageNum * (this.pageSize + 1)
+      (pageNum - 1) * this.pageSize,
+      pageNum * this.pageSize
     );
 
     return sensorSliceToPageSize;

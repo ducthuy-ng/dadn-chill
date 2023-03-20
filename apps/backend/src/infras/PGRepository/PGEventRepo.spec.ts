@@ -1,5 +1,6 @@
 import { Pool } from 'pg';
 import { PGRepository } from '.';
+import { BSLogger } from '../BSLogger';
 
 describe('PGEventRepo test', () => {
   let sensorRepo: PGRepository;
@@ -7,8 +8,9 @@ describe('PGEventRepo test', () => {
   const pgConnString = 'postgresql://backend:password@localhost:5432/backend';
   const pgPool = new Pool({ connectionString: pgConnString });
 
+  const dummyLogger = new BSLogger('test logger', {});
   beforeAll(async () => {
-    sensorRepo = new PGRepository(pgConnString, false);
+    sensorRepo = new PGRepository(pgConnString, dummyLogger);
     await pgPool.connect();
   });
 

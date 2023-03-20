@@ -14,10 +14,15 @@ class Sensor {
   private id: SensorId;
   private name: string;
 
-  private setupLocation: GeoLocation;
+  private setupLocation: GeoLocation = { longitude: 0, latitude: 0 };
 
-  private lastReadTimestamp: string;
-  private readValue: SensorValue;
+  private lastReadTimestamp = '1970-01-01T00:00:00';
+  private readValue: SensorValue = {
+    temperature: 0,
+    humidity: 0,
+    lightIntensity: 0,
+    earthMoisture: 0,
+  };
 
   constructor(newId: number, name: string) {
     this.id = newId;

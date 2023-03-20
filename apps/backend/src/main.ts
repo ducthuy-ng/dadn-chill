@@ -3,24 +3,38 @@
  * This is only a minimal backend to get started.
  */
 
-import { exit } from 'process';
-import { KafkaEventMQ } from './infras/KafkaEventMQ';
+import { env } from 'process';
+import { GetSensorListUseCase, GetSingleSensorUseCase } from './core/usecases';
+import { LogLevel } from './core/usecases/Logger';
+import { BSLogger } from './infras/BSLogger';
+import { EnvironmentVariablesProcessor } from './infras/EnvironmentVariable';
+import { ExpressServer } from './infras/ExpressServer';
+import { PGRepository } from './infras/PGRepository';
 
-if (process.env.KAFKA_BROKERS === null) {
-  console.error(`"KAFKA_BROKERS" is not defined`);
-  exit(1);
+const envVarProcessor = new EnvironmentVariablesProcessor(env);
+
+const sensorRepo = new PGRepository(
+  envVarProcessor.getPGConnString(),
+  new BSLogger('PGRepo', { level: LogLevel.DEBUG })
+);
+const getSingleSensorUC = new GetSingleSensorUseCase(sensorRepo);
+const getSensorListUC = new GetSensorListUseCase(sensorRepo);
+
+const server = new ExpressServer(
+  3333,
+  getSingleSensorUC,
+  getSensorListUC,
+  new BSLogger('ExpressServer', {}),
+  envVarProcessor.getFEEndpoint()
+);
+
+function startServers() {
+  server.startListening();
 }
-const kafkaBrokers = process.env.KAFKA_BROKERS.split(',');
-const eventMQ = new KafkaEventMQ(kafkaBrokers, 'test-topic');
 
-eventMQ.onNewEvent((event) => {
-  console.log(event);
-});
-
-eventMQ.startListening();
-
-async function closingServer() {
-  await eventMQ.stopListening();
+async function closingServers() {
+  server.stopListening();
 }
 
-process.once('SIGINT', closingServer);
+startServers();
+process.once('SIGINT', closingServers);

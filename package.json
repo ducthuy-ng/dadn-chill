@@ -10,7 +10,7 @@
     "stop:frontend": "",
     "stop:backend": "sh -c './bin/stop-dev-backend.sh'",
     "stop:sensor": "docker compose -f docker-compose.dev.yaml down --volumes",
-    "lint": "npx nx lint frontend; npx nx lint backend",
+    "lint": "npx nx run-many --target=lint --all",
     "format": "npx nx format:write --all",
     "test:backend": "sh -c ./bin/test-backend.sh",
     "clean:dev": "sh -c './bin/clean-dev.sh'"
@@ -57,6 +57,7 @@
     "jest": "29.4.3",
     "jest-environment-jsdom": "29.4.3",
     "jsdom": "~20.0.3",
+    "node-fetch": "^2.6.9",
     "nx": "15.8.6",
     "postcss": "8.4.19",
     "prettier": "^2.8.4",
@@ -73,6 +74,8 @@
     "vitest": "^0.25.8"
   },
   "dependencies": {
+    "bs-logger": "^0.2.6",
+    "cors": "^2.8.5",
     "express": "^4.18.1",
     "jotai": "^2.0.3",
     "kafkajs": "^2.2.4",
