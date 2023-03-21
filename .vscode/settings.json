@@ -13,5 +13,13 @@
       "username": "backend",
       "askForPassword": true
     }
+  ],
+  "vsmqtt.brokerProfiles": [
+    {
+      "name": "Test MQTT",
+      "host": "localhost",
+      "port": 1883,
+      "clientId": "vsmqtt_client"
+    }
   ]
 }
