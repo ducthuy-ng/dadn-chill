@@ -2,7 +2,7 @@ import { ExpressServer } from '.';
 import { GetSensorListUseCase, GetSingleSensorUseCase } from '../../core/usecases';
 import { InMemSensorRepo } from '../InMemSensorRepo';
 import { sleep } from '../testingTools';
-import fetch, {Response} from 'node-fetch';
+import fetch, { Response } from 'node-fetch';
 import { Sensor } from '../../core/domain/Sensor';
 import { BSLogger } from '../BSLogger';
 

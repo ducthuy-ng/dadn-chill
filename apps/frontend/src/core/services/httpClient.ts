@@ -100,7 +100,7 @@ class Http {
   // We can handle generic app errors depending on the status code
   private handleError(error: AxiosError) {
     if (error === undefined) {
-      return Promise.reject("Undefined Error");
+      return Promise.reject('Undefined Error');
     }
     const { status } = error;
 
@@ -123,7 +123,7 @@ class Http {
       }
       case StatusCode.NotFound: {
         // Handle NotFound
-        break
+        break;
       }
     }
 

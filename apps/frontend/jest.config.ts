@@ -14,5 +14,5 @@ export default {
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../coverage/apps/frontend',
-  testTimeout: 20000
+  testTimeout: 20000,
 };

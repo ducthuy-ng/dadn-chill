@@ -6,7 +6,6 @@ import MapEngine from '../components/Map';
 import { SensorData } from '../core/domain/Sensor';
 import { fetchPagedSensors } from '../core/services/SensorAdapter';
 
-
 interface DisplayPositionProps {
   map: Map;
 }
@@ -87,60 +86,59 @@ export default function HomePage() {
               </tr>
             </thead>
             <tbody>
-              {sensorDummyData.length !== 0 ? (
-                sensorDummyData.map((sensorData) => (
-                  <tr
-                    key={sensorData.id}
-                    className="cursor-pointer border-b-2 hover:bg-gray-100"
-                    onClick={() => handleClickOnMap(sensorData.location)}
-                  >
-                    <td className="py-2 text-center">{sensorData.name}</td>
-                    <td className="py-2 text-center">
-                      <span
-                        className={`text- inline-block h-4  w-4 rounded-full  align-middle ${
-                          sensorData.connected ? 'bg-green-500' : 'bg-red-500'
-                        }`}
-                      ></span>
-                    </td>
-                    <td className="py-2 text-center">{sensorData.temperature}</td>
-                    <td className="py-2 text-center">{sensorData.humidity}</td>
-                    <td className="py-2 text-center">{sensorData.lux}</td>
-                    <td className="py-2 text-center">{sensorData.moist}</td>
-                    <td className="py-2 text-center">
-                      <Link to={`/sensor/${sensorData.id}`}>
-                        <FaEye />
-                      </Link>
-                    </td>
-                  </tr>
-                ))
-              ) : Array.from({length: 10}).map((value, id) => (
-                <tr key={id} className="cursor-pointer border-b-2 hover:bg-gray-100">
-                  <td className="py-2 text-center">
-                    <div className="w-24 h-2.5 rounded-full bg-gray-300 inline-block align-middle"></div>
-                  </td>
-                  <td className="py-2 text-center">
-
-                    <span
-                      className={`text- inline-block h-4  w-4 rounded-full align-middle bg-gray-300`}
-                    ></span>
-                  </td>
-                  <td className="py-2 text-center">
-                    <div className="h-2.5 w-20 rounded-full bg-gray-300 inline-block align-middle"></div>
-                  </td>
-                  <td className="py-2 text-center">
-                    <div className="h-2.5 w-20 rounded-full bg-gray-300 inline-block align-middle"></div>
-                  </td>
-                  <td className="py-2 text-center">
-                    <div className="h-2.5 w-20 rounded-full bg-gray-300 inline-block align-middle"></div>
-                  </td>
-                  <td className="py-2 text-center">
-                    <div className="h-2.5 w-20 rounded-full bg-gray-300 inline-block align-middle"></div>
-                  </td>
-                  <td className="py-2 text-center">
-                  <div className="h-2.5 w-4 rounded-full bg-gray-300 inline-block align-middle"></div>
-                  </td>
-                </tr>
-              ))}
+              {sensorDummyData.length !== 0
+                ? sensorDummyData.map((sensorData) => (
+                    <tr
+                      key={sensorData.id}
+                      className="cursor-pointer border-b-2 hover:bg-gray-100"
+                      onClick={() => handleClickOnMap(sensorData.location)}
+                    >
+                      <td className="py-2 text-center">{sensorData.name}</td>
+                      <td className="py-2 text-center">
+                        <span
+                          className={`text- inline-block h-4  w-4 rounded-full  align-middle ${
+                            sensorData.connected ? 'bg-green-500' : 'bg-red-500'
+                          }`}
+                        ></span>
+                      </td>
+                      <td className="py-2 text-center">{sensorData.temperature}</td>
+                      <td className="py-2 text-center">{sensorData.humidity}</td>
+                      <td className="py-2 text-center">{sensorData.lux}</td>
+                      <td className="py-2 text-center">{sensorData.moist}</td>
+                      <td className="py-2 text-center">
+                        <Link to={`/sensor/${sensorData.id}`}>
+                          <FaEye />
+                        </Link>
+                      </td>
+                    </tr>
+                  ))
+                : Array.from({ length: 10 }).map((value, id) => (
+                    <tr key={id} className="cursor-pointer border-b-2 hover:bg-gray-100">
+                      <td className="py-2 text-center">
+                        <div className="inline-block h-2.5 w-24 rounded-full bg-gray-300 align-middle"></div>
+                      </td>
+                      <td className="py-2 text-center">
+                        <span
+                          className={`text- inline-block h-4  w-4 rounded-full bg-gray-300 align-middle`}
+                        ></span>
+                      </td>
+                      <td className="py-2 text-center">
+                        <div className="inline-block h-2.5 w-20 rounded-full bg-gray-300 align-middle"></div>
+                      </td>
+                      <td className="py-2 text-center">
+                        <div className="inline-block h-2.5 w-20 rounded-full bg-gray-300 align-middle"></div>
+                      </td>
+                      <td className="py-2 text-center">
+                        <div className="inline-block h-2.5 w-20 rounded-full bg-gray-300 align-middle"></div>
+                      </td>
+                      <td className="py-2 text-center">
+                        <div className="inline-block h-2.5 w-20 rounded-full bg-gray-300 align-middle"></div>
+                      </td>
+                      <td className="py-2 text-center">
+                        <div className="inline-block h-2.5 w-4 rounded-full bg-gray-300 align-middle"></div>
+                      </td>
+                    </tr>
+                  ))}
             </tbody>
           </table>
           <div className="my-4 flex w-full flex-row justify-end gap-10">
