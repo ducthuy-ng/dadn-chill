@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { FaCaretLeft, FaCaretRight, FaEye } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import MapEngine from '../components/Map';
-import { SensorData } from '../model/SensorData';
+import {SensorData} from '../core/domain/Sensor'
 
 const sensorDummyData: SensorData[] = [
   {

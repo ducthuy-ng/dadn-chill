@@ -36,7 +36,7 @@ paths:
           required: true
           name: id
           schema:
-            type: number
+            type: string
       responses:
         '200':
           description: OK
@@ -85,7 +85,7 @@ components:
           type: number
         lux:
           type: number
-        windSpeed:
+        moist:
           type: number
 
         location:

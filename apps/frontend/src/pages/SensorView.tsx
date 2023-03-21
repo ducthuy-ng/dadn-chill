@@ -15,7 +15,7 @@ import {
   Label,
 } from 'recharts';
 import MapEngine from '../components/Map';
-import { SensorMetadata } from '../model/SensorData';
+import { SensorMetadata } from '../core/domain/Sensor';
 
 const sensor: SensorMetadata = {
   name: 'Cảm biến 1',

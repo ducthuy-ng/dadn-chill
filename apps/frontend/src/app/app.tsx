@@ -6,7 +6,7 @@ import NotificationsPage from '../pages/NotificationsPage';
 import HomePage from '../pages/HomePage';
 import SensorView from '../pages/SensorView';
 import Sidebar from '../components/Sidebar';
-import { sidebar } from '../store';
+import { sidebar } from '../core/services/store';
 import { useAtom } from 'jotai';
 
 export function App() {
