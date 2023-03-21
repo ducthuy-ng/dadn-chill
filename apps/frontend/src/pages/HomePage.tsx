@@ -1,4 +1,3 @@
-import { useAtom } from 'jotai';
 import { LatLngExpression, Map } from 'leaflet';
 import { useCallback, useEffect, useState } from 'react';
 import { FaCaretLeft, FaCaretRight, FaEye } from 'react-icons/fa';
@@ -6,7 +5,6 @@ import { Link } from 'react-router-dom';
 import MapEngine from '../components/Map';
 import { SensorData } from '../core/domain/Sensor';
 import { fetchPagedSensors } from '../core/services/SensorAdapter';
-import { getSensors, loadableSensor, sensors } from '../core/services/store';
 
 // const sensorDummyData: SensorData[] = [
 //   {

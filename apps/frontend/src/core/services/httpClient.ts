@@ -3,7 +3,7 @@ import axios, {
   AxiosInstance,
   AxiosRequestConfig,
   AxiosResponse,
-  InternalAxiosRequestConfig,
+  // InternalAxiosRequestConfig,
 } from 'axios';
 
 enum StatusCode {
@@ -22,22 +22,22 @@ const headers: Readonly<Record<string, string | boolean>> = {
 
 // We can use the following function to inject the JWT token through an interceptor
 // We get the `accessToken` from the localStorage that we set when we authenticate
-const injectToken = (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
-  try {
-    const token = localStorage.getItem('accessToken');
+// const injectToken = (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
+//   try {
+//     const token = localStorage.getItem('accessToken');
 
-    if (token != null && config.headers != null) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-  } catch (error) {
-    if (typeof error === 'string') {
-      throw new Error(error.toUpperCase()); // works, `e` narrowed to string
-    } else if (error instanceof Error) {
-      throw error.message; // works, `e` narrowed to Error
-    }
-  }
-  return config;
-};
+//     if (token != null && config.headers != null) {
+//       config.headers.Authorization = `Bearer ${token}`;
+//     }
+//   } catch (error) {
+//     if (typeof error === 'string') {
+//       throw new Error(error.toUpperCase()); // works, `e` narrowed to string
+//     } else if (error instanceof Error) {
+//       throw error.message; // works, `e` narrowed to Error
+//     }
+//   }
+//   return config;
+// };
 
 class Http {
   private instance: AxiosInstance | null = null;
