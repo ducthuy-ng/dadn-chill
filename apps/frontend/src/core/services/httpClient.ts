@@ -42,7 +42,6 @@ const injectToken = (config: InternalAxiosRequestConfig): InternalAxiosRequestCo
 class Http {
   private instance: AxiosInstance | null = null;
 
-
   private get http(): AxiosInstance {
     return this.instance != null ? this.instance : this.initHttp();
   }
@@ -99,6 +98,9 @@ class Http {
   // Handle global app errors
   // We can handle generic app errors depending on the status code
   private handleError(error: AxiosError) {
+    if (error === undefined) {
+      return Promise.reject(error);
+    }
     const { status } = error;
 
     switch (status) {
