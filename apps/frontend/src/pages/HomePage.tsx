@@ -6,79 +6,6 @@ import MapEngine from '../components/Map';
 import { SensorData } from '../core/domain/Sensor';
 import { fetchPagedSensors } from '../core/services/SensorAdapter';
 
-// const sensorDummyData: SensorData[] = [
-//   {
-//     id: 'sensor-001',
-//     name: 'Cảm biến 1',
-//     connected: true,
-//     temperature: 1,
-//     humidity: 1,
-//     lux: 1,
-//     moist: 1,
-//     time: new Date().toISOString(),
-//     location: [10.552493, 106.873474],
-//   },
-//   {
-//     id: 'sensor-002',
-//     name: 'Cảm biến 2',
-//     connected: false,
-//     temperature: 1,
-//     humidity: 1,
-//     lux: 1,
-//     moist: 1,
-//     time: new Date().toISOString(),
-
-//     location: [10.5390624, 106.879069],
-//   },
-//   {
-//     id: 'sensor-003',
-//     name: 'Cảm biến 3',
-//     connected: false,
-//     temperature: 1,
-//     humidity: 1,
-//     lux: 1,
-//     moist: 1,
-//     time: new Date().toISOString(),
-
-//     location: [10.5257651, 106.8480182],
-//   },
-//   {
-//     id: 'sensor-004',
-//     name: 'Cảm biến 4',
-//     connected: true,
-//     temperature: 1,
-//     humidity: 1,
-//     lux: 1,
-//     moist: 1,
-//     time: new Date().toISOString(),
-
-//     location: [10.5122799, 106.7979179],
-//   },
-//   {
-//     id: 'sensor-006',
-//     name: 'Cảm biến 5',
-//     connected: true,
-//     temperature: 1,
-//     humidity: 1,
-//     lux: 1,
-//     moist: 1,
-//     time: new Date().toISOString(),
-
-//     location: [10.478189, 106.839396],
-//   },
-//   {
-//     id: 'sensor-007',
-//     name: 'Cảm biến 6',
-//     connected: false,
-//     temperature: 2,
-//     humidity: 3,
-//     lux: 1,
-//     moist: 0,
-//     time: new Date().toISOString(),
-
-//     location: [10.4792, 106.8984],
-//   },
-// ];
 
 interface DisplayPositionProps {
   map: Map;
@@ -180,7 +107,7 @@ export default function HomePage() {
                     <td className="py-2 text-center">{sensorData.lux}</td>
                     <td className="py-2 text-center">{sensorData.moist}</td>
                     <td className="py-2 text-center">
-                      <Link to={`/${sensorData.id}`}>
+                      <Link to={`/sensor/${sensorData.id}`}>
                         <FaEye />
                       </Link>
                     </td>
@@ -189,27 +116,29 @@ export default function HomePage() {
               ) : Array.from({length: 10}).map((value, id) => (
                 <tr key={id} className="cursor-pointer border-b-2 hover:bg-gray-100">
                   <td className="py-2 text-center">
-                    <div className="w-25 h-2.5 rounded-full bg-gray-300"></div>
+                    <div className="w-24 h-2.5 rounded-full bg-gray-300 inline-block align-middle"></div>
                   </td>
                   <td className="py-2 text-center">
-                    {' '}
+
                     <span
-                      className={`text- inline-block h-4  w-4 rounded-full  align-middle bg-gray-300`}
+                      className={`text- inline-block h-4  w-4 rounded-full align-middle bg-gray-300`}
                     ></span>
                   </td>
                   <td className="py-2 text-center">
-                    <div className="h-2.5 w-24 rounded-full bg-gray-300"></div>
+                    <div className="h-2.5 w-20 rounded-full bg-gray-300 inline-block align-middle"></div>
                   </td>
                   <td className="py-2 text-center">
-                    <div className="h-2.5 w-24 rounded-full bg-gray-300"></div>
+                    <div className="h-2.5 w-20 rounded-full bg-gray-300 inline-block align-middle"></div>
                   </td>
                   <td className="py-2 text-center">
-                    <div className="h-2.5 w-24 rounded-full bg-gray-300"></div>
+                    <div className="h-2.5 w-20 rounded-full bg-gray-300 inline-block align-middle"></div>
                   </td>
                   <td className="py-2 text-center">
-                    <div className="h-2.5 w-24 rounded-full bg-gray-300"></div>
+                    <div className="h-2.5 w-20 rounded-full bg-gray-300 inline-block align-middle"></div>
                   </td>
-                  <td className="py-2 text-center"></td>
+                  <td className="py-2 text-center">
+                  <div className="h-2.5 w-4 rounded-full bg-gray-300 inline-block align-middle"></div>
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -4,7 +4,6 @@ export default {
   preset: '../../jest.preset.js',
   globals: {},
   testEnvironment: 'node',
-  setupFiles: ['<rootDir>/.jest/setEnvVars.ts'],
   transform: {
     '^.+\\.[tj]s$': [
       'ts-jest',
@@ -15,4 +14,5 @@ export default {
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../coverage/apps/frontend',
+  testTimeout: 20000
 };

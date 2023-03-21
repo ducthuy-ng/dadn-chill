@@ -11,6 +11,7 @@ enum StatusCode {
   Forbidden = 403,
   TooManyRequests = 429,
   InternalServerError = 500,
+  NotFound = 404,
 }
 
 const headers: Readonly<Record<string, string | boolean>> = {
@@ -99,7 +100,7 @@ class Http {
   // We can handle generic app errors depending on the status code
   private handleError(error: AxiosError) {
     if (error === undefined) {
-      return Promise.reject(error);
+      return Promise.reject("Undefined Error");
     }
     const { status } = error;
 
@@ -120,9 +121,13 @@ class Http {
         // Handle TooManyRequests
         break;
       }
+      case StatusCode.NotFound: {
+        // Handle NotFound
+        break
+      }
     }
 
-    return Promise.reject(error);
+    return Promise.reject(status);
   }
 }
 
