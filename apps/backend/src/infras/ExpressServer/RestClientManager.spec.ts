@@ -3,7 +3,7 @@ import { SensorReadEvent } from '../../core/domain/SensorReadEvent';
 import { BSLogger } from '../BSLogger';
 import { sleep } from '../testingTools';
 import { RestClientManager } from './RestClientManager';
-import fetch from 'node-fetch';
+import fetch, { Response } from 'node-fetch';
 
 jest.setTimeout(10000);
 
