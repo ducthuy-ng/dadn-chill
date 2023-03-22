@@ -5,7 +5,11 @@ import { ClientManager } from './gateways/ClientManager';
 import { ReadEventRepo } from './repos/ReadEventRepo';
 import { SensorRepo } from './repos/SensorRepo';
 
-export class ProcessReadEventUseCase {
+export interface IProcessReadEventUC {
+  execute(event: SensorReadEvent);
+}
+
+export class ProcessReadEventUseCase implements IProcessReadEventUC {
   sensorRepo: SensorRepo;
 
   notificationRepo: NotificationRepo;
