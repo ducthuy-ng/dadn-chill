@@ -2,7 +2,7 @@ import { Map } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Ref } from 'react';
 import { Circle, MapContainer, TileLayer, Tooltip } from 'react-leaflet';
-import { SensorMetadata } from '../model/SensorData';
+import { SensorMetadata } from '../core/domain/Sensor';
 
 // metadata
 const TILE_LAYER_ATTRIBUTION =

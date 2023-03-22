@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { FaAngleDown } from 'react-icons/fa';
-import { Notification } from '../core/Notification';
+import { Notification } from '../core/domain/Notification';
 import { NotificationPageContext } from '../pages/NotificationsPage';
 
 interface NotificationItemProps {

@@ -1,7 +1,7 @@
 import { FaBars, FaBell } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useAtom } from 'jotai';
-import { sidebar } from '../store';
+import { sidebar } from '../core/services/store';
 
 export function Navbar() {
   const [show, setShow] = useAtom(sidebar);

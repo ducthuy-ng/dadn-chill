@@ -1,5 +1,5 @@
 import { useAtom } from 'jotai';
-import { sidebar } from '../store';
+import { sidebar } from '../core/services/store';
 
 export default function Sidebar() {
   const [show, setShow] = useAtom(sidebar);

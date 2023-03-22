@@ -3,81 +3,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { FaCaretLeft, FaCaretRight, FaEye } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import MapEngine from '../components/Map';
-import { SensorData } from '../model/SensorData';
-
-const sensorDummyData: SensorData[] = [
-  {
-    id: 'sensor-001',
-    name: 'Cảm biến 1',
-    connected: true,
-    temperature: 1,
-    humidity: 1,
-    lux: 1,
-    moist: 1,
-    time: new Date().toISOString(),
-    location: [10.552493, 106.873474],
-  },
-  {
-    id: 'sensor-002',
-    name: 'Cảm biến 2',
-    connected: false,
-    temperature: 1,
-    humidity: 1,
-    lux: 1,
-    moist: 1,
-    time: new Date().toISOString(),
-
-    location: [10.5390624, 106.879069],
-  },
-  {
-    id: 'sensor-003',
-    name: 'Cảm biến 3',
-    connected: false,
-    temperature: 1,
-    humidity: 1,
-    lux: 1,
-    moist: 1,
-    time: new Date().toISOString(),
-
-    location: [10.5257651, 106.8480182],
-  },
-  {
-    id: 'sensor-004',
-    name: 'Cảm biến 4',
-    connected: true,
-    temperature: 1,
-    humidity: 1,
-    lux: 1,
-    moist: 1,
-    time: new Date().toISOString(),
-
-    location: [10.5122799, 106.7979179],
-  },
-  {
-    id: 'sensor-006',
-    name: 'Cảm biến 5',
-    connected: true,
-    temperature: 1,
-    humidity: 1,
-    lux: 1,
-    moist: 1,
-    time: new Date().toISOString(),
-
-    location: [10.478189, 106.839396],
-  },
-  {
-    id: 'sensor-007',
-    name: 'Cảm biến 6',
-    connected: false,
-    temperature: 2,
-    humidity: 3,
-    lux: 1,
-    moist: 0,
-    time: new Date().toISOString(),
-
-    location: [10.4792, 106.8984],
-  },
-];
+import { SensorData } from '../core/domain/Sensor';
+import { fetchPagedSensors } from '../core/services/SensorAdapter';
 
 interface DisplayPositionProps {
   map: Map;
@@ -117,8 +44,23 @@ export function DisplayPosition({ map }: DisplayPositionProps) {
 }
 
 export default function HomePage() {
+  const [sensorDummyData, getData] = useState<SensorData[]>([]);
   const [map, setMap] = useState<Map | null>(null);
   const zoom = 13;
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const response = await fetchPagedSensors(1);
+        const data = await response.data;
+        getData(data);
+      } catch (error) {
+        console.log('An error occurred');
+        clearInterval(interval);
+      }
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleClickOnMap = (position: LatLngExpression): void => {
     if (map === null) return;
@@ -144,31 +86,59 @@ export default function HomePage() {
               </tr>
             </thead>
             <tbody>
-              {sensorDummyData.map((sensorData) => (
-                <tr
-                  key={sensorData.id}
-                  className="cursor-pointer border-b-2 hover:bg-gray-100"
-                  onClick={() => handleClickOnMap(sensorData.location)}
-                >
-                  <td className="py-2 text-center">{sensorData.name}</td>
-                  <td className="py-2 text-center">
-                    <span
-                      className={`text- inline-block h-4  w-4 rounded-full  align-middle ${
-                        sensorData.connected ? 'bg-green-500' : 'bg-red-500'
-                      }`}
-                    ></span>
-                  </td>
-                  <td className="py-2 text-center">{sensorData.temperature}</td>
-                  <td className="py-2 text-center">{sensorData.humidity}</td>
-                  <td className="py-2 text-center">{sensorData.lux}</td>
-                  <td className="py-2 text-center">{sensorData.moist}</td>
-                  <td className="py-2 text-center">
-                    <Link to={`/${sensorData.id}`}>
-                      <FaEye />
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+              {sensorDummyData.length !== 0
+                ? sensorDummyData.map((sensorData) => (
+                    <tr
+                      key={sensorData.id}
+                      className="cursor-pointer border-b-2 hover:bg-gray-100"
+                      onClick={() => handleClickOnMap(sensorData.location)}
+                    >
+                      <td className="py-2 text-center">{sensorData.name}</td>
+                      <td className="py-2 text-center">
+                        <span
+                          className={`text- inline-block h-4  w-4 rounded-full  align-middle ${
+                            sensorData.connected ? 'bg-green-500' : 'bg-red-500'
+                          }`}
+                        ></span>
+                      </td>
+                      <td className="py-2 text-center">{sensorData.temperature}</td>
+                      <td className="py-2 text-center">{sensorData.humidity}</td>
+                      <td className="py-2 text-center">{sensorData.lux}</td>
+                      <td className="py-2 text-center">{sensorData.moist}</td>
+                      <td className="py-2 text-center">
+                        <Link to={`/sensor/${sensorData.id}`}>
+                          <FaEye />
+                        </Link>
+                      </td>
+                    </tr>
+                  ))
+                : Array.from({ length: 10 }).map((value, id) => (
+                    <tr key={id} className="cursor-pointer border-b-2 hover:bg-gray-100">
+                      <td className="py-2 text-center">
+                        <div className="inline-block h-2.5 w-24 rounded-full bg-gray-300 align-middle"></div>
+                      </td>
+                      <td className="py-2 text-center">
+                        <span
+                          className={`text- inline-block h-4  w-4 rounded-full bg-gray-300 align-middle`}
+                        ></span>
+                      </td>
+                      <td className="py-2 text-center">
+                        <div className="inline-block h-2.5 w-20 rounded-full bg-gray-300 align-middle"></div>
+                      </td>
+                      <td className="py-2 text-center">
+                        <div className="inline-block h-2.5 w-20 rounded-full bg-gray-300 align-middle"></div>
+                      </td>
+                      <td className="py-2 text-center">
+                        <div className="inline-block h-2.5 w-20 rounded-full bg-gray-300 align-middle"></div>
+                      </td>
+                      <td className="py-2 text-center">
+                        <div className="inline-block h-2.5 w-20 rounded-full bg-gray-300 align-middle"></div>
+                      </td>
+                      <td className="py-2 text-center">
+                        <div className="inline-block h-2.5 w-4 rounded-full bg-gray-300 align-middle"></div>
+                      </td>
+                    </tr>
+                  ))}
             </tbody>
           </table>
           <div className="my-4 flex w-full flex-row justify-end gap-10">
@@ -193,6 +163,7 @@ export default function HomePage() {
               location: el.location,
             }))}
           />
+
           {map ? <DisplayPosition map={map} /> : null}
         </div>
       </div>

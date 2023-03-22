@@ -1,6 +1,6 @@
 import { createContext, useState } from 'react';
 import { NotificationItem } from '../components/NotificationItem';
-import { Notification } from '../core/Notification';
+import { Notification } from '../core/domain/Notification';
 
 function fetchAllNotifications(): Notification[] {
   return [
