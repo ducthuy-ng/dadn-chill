@@ -1,7 +1,7 @@
-import { SensorReadEvent } from '../../domain/SensorReadEvent';
+import { IProcessReadEventUC } from '../ProcessReadEvent';
 
 abstract class EventMQ {
-  abstract onNewEvent(callback: (event: SensorReadEvent) => unknown): void;
+  abstract onNewEvent(usecase: IProcessReadEventUC): void;
 }
 
 export { EventMQ };

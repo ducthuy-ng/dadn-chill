@@ -2,7 +2,8 @@ CREATE SCHEMA IF NOT EXISTS data_pipeline;
 
 CREATE TABLE
   IF NOT EXISTS data_pipeline.sensor_read_event (
-    sensor_id SERIAL PRIMARY KEY,
+    event_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    sensor_id SERIAL NOT NULL,
     read_ts TIMESTAMP WITH TIME ZONE,
     temperature REAL,
     humidity REAL,
