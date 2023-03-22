@@ -1,10 +1,13 @@
+import fetch from 'node-fetch';
 import { ExpressServer } from '.';
+import { Sensor } from '../../core/domain/Sensor';
 import { GetSensorListUseCase, GetSingleSensorUseCase } from '../../core/usecases';
+import { ChangeSubscriptionUseCase } from '../../core/usecases/ChangeSubscription';
+import { ClientSubscribeUseCase } from '../../core/usecases/StartClient';
+import { BSLogger } from '../BSLogger';
 import { InMemSensorRepo } from '../InMemSensorRepo';
 import { sleep } from '../testingTools';
-import fetch from 'node-fetch';
-import { Sensor } from '../../core/domain/Sensor';
-import { BSLogger } from '../BSLogger';
+import { RestClientManager } from './RestClientManager';
 
 describe('Test REST API server', () => {
   const sensor1 = new Sensor(1, 'ABC');
@@ -16,8 +19,20 @@ describe('Test REST API server', () => {
 
   const testLogger = new BSLogger('test sensor', { target: '' });
 
+  const restClientManager = new RestClientManager(testLogger);
+  const clientSubscribeUC = new ClientSubscribeUseCase(restClientManager);
+  const changeSubscriptionUC = new ChangeSubscriptionUseCase(restClientManager);
+
   const listeningPort = 3333;
-  const server = new ExpressServer(listeningPort, getSingleSensorUC, getSensorListUC, testLogger);
+  const server = new ExpressServer(
+    listeningPort,
+    getSingleSensorUC,
+    getSensorListUC,
+    clientSubscribeUC,
+    changeSubscriptionUC,
+    restClientManager,
+    testLogger
+  );
 
   beforeAll(async () => {
     server.startListening();

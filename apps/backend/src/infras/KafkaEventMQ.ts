@@ -1,12 +1,13 @@
 import { Consumer, Kafka, logLevel } from 'kafkajs';
 import { SensorReadEvent } from '../core/domain/SensorReadEvent';
 import { EventMQ } from '../core/usecases/gateways/EventMQ';
+import { IProcessReadEventUC } from '../core/usecases/ProcessReadEvent';
 
 export class KafkaEventMQ implements EventMQ {
   private topicName: string;
   private consumer: Consumer;
 
-  private onNewEventCallBack: (event: SensorReadEvent) => unknown = null;
+  private processReadEventUC: IProcessReadEventUC;
 
   constructor(brokers: string[], topicName = 'chill-topic') {
     const kafka = new Kafka({
@@ -42,12 +43,12 @@ export class KafkaEventMQ implements EventMQ {
     await this.consumer.subscribe({ topic: this.topicName, fromBeginning: true });
     await this.consumer.run({
       eachMessage: async ({ message }) => {
-        if (!this.onNewEventCallBack) return;
+        if (!this.processReadEventUC) return;
 
         const parsedMessage = JSON.parse(message.value.toString());
         if (!this.isSensorReadEvent(parsedMessage)) return;
 
-        this.onNewEventCallBack(parsedMessage);
+        this.processReadEventUC.execute(parsedMessage);
       },
     });
   }
@@ -57,7 +58,7 @@ export class KafkaEventMQ implements EventMQ {
     await this.consumer.disconnect();
   }
 
-  onNewEvent(callback: (event: SensorReadEvent) => unknown): void {
-    this.onNewEventCallBack = callback;
+  onNewEvent(usecase: IProcessReadEventUC): void {
+    this.processReadEventUC = usecase;
   }
 }

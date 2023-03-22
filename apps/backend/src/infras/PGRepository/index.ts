@@ -1,11 +1,12 @@
 import { Pool } from 'pg';
+import { Notification, NotificationRepo } from '../../core/domain/Notification';
 import { Sensor, SensorId } from '../../core/domain/Sensor';
 import { SensorReadEvent } from '../../core/domain/SensorReadEvent';
 import { Logger } from '../../core/usecases/Logger';
 import { FailedToStoreEvent, ReadEventRepo } from '../../core/usecases/repos/ReadEventRepo';
 import { SensorRepo } from '../../core/usecases/repos/SensorRepo';
 
-export class PGRepository implements SensorRepo, ReadEventRepo {
+export class PGRepository implements SensorRepo, NotificationRepo, ReadEventRepo {
   private static pageSize = 10;
 
   private connectionPool: Pool;
@@ -22,6 +23,16 @@ export class PGRepository implements SensorRepo, ReadEventRepo {
     });
 
     this.logger = logger;
+  }
+
+  // TODO
+  add(...notifications: Notification[]): void {
+    return;
+  }
+
+  // TODO
+  getLastestNotification(pageNum: number): Notification[] {
+    return [];
   }
 
   async disconnect() {
@@ -106,7 +117,7 @@ export class PGRepository implements SensorRepo, ReadEventRepo {
   async storeEvent(event: SensorReadEvent): Promise<void> {
     this.logger.debug(`Storing event`);
     const result = await this.connectionPool.query(
-      'INSERT INTO data_pipeline.sensor_read_event VALUES($1, $2, $3, $4, $5, $6)',
+      'INSERT INTO data_pipeline.sensor_read_event(sensor_id,read_ts,temperature,humidity,light_intensity,earth_moisture) VALUES($1, $2, $3, $4, $5, $6)',
       [
         event.sensorId,
         event.readTimestamp,

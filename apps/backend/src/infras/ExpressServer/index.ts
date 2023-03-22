@@ -1,37 +1,27 @@
-import { randomUUID } from 'crypto';
-import express, { Application, RequestHandler, Response } from 'express';
+import express, { Application, RequestHandler } from 'express';
 import { Server } from 'http';
-import { Notification } from '../../core/domain/Notification';
-import { SensorId } from '../../core/domain/Sensor';
-import { SensorReadEvent } from '../../core/domain/SensorReadEvent';
 import { GetSensorListUseCase, GetSingleSensorUseCase } from '../../core/usecases';
-import {
-  ClientId,
-  ClientIdNotFound,
-  ClientManager,
-} from '../../core/usecases/gateways/ClientManager';
 import { Logger } from '../../core/usecases/Logger';
 import { PageOutOfRange } from '../../core/usecases/repos/SensorRepo';
 
+import * as bodyParser from 'body-parser';
 import cors from 'cors';
-
+import { ChangeSubscriptionUseCase } from '../../core/usecases/ChangeSubscription';
+import { ClientIdNotFound } from '../../core/usecases/gateways/ClientManager';
+import { ClientSubscribeUseCase } from '../../core/usecases/StartClient';
 import { ErrorMsg } from './ErrorMsg';
+import { RestClientManager } from './RestClientManager';
 import { GenerateDto, SensorDto } from './SensorDto';
 
-type Connection = {
-  subscribedSensorIdx: SensorId[];
-  resp: Response;
-};
-
-export class ExpressServer implements ClientManager {
+export class ExpressServer {
   private app: Application;
   private server: Server;
   private listeningPort: number;
 
-  private clientConnectionMap: Map<ClientId, Connection>;
-
   private getSingleSensorUC: GetSingleSensorUseCase;
   private getSensorListUC: GetSensorListUseCase;
+  private clientSubscribeUC: ClientSubscribeUseCase;
+  private changeSubscriptionUC: ChangeSubscriptionUseCase;
 
   private logger: Logger;
 
@@ -39,23 +29,31 @@ export class ExpressServer implements ClientManager {
     listeningPort = 3333,
     getSingleSensorUC: GetSingleSensorUseCase,
     getSensorListUC: GetSensorListUseCase,
+    clientSubscribeUC: ClientSubscribeUseCase,
+    changeSubscriptionUC: ChangeSubscriptionUseCase,
+    restClientManager: RestClientManager,
     logger: Logger,
     frontendEndpoint = 'localhost:4200'
   ) {
     this.app = express();
 
+    this.setupBodyParser();
     this.setupCORS(frontendEndpoint);
     this.setupRestRouter();
-    // this.setupClientManagerRoute();
-
-    this.clientConnectionMap = new Map();
+    this.setupClientManagerRouter(restClientManager);
 
     this.listeningPort = listeningPort;
 
     this.getSingleSensorUC = getSingleSensorUC;
     this.getSensorListUC = getSensorListUC;
+    this.clientSubscribeUC = clientSubscribeUC;
+    this.changeSubscriptionUC = changeSubscriptionUC;
 
     this.logger = logger;
+  }
+
+  private setupBodyParser() {
+    this.app.use(bodyParser.json());
   }
 
   private setupCORS(frontendEndpoint: string) {
@@ -72,6 +70,56 @@ export class ExpressServer implements ClientManager {
     // TODO: router.get<null, SensorDto[] | ErrorMsg>('/sensor/:id', this.handleGetSensorList);
 
     this.app.use('/', router);
+  }
+
+  private setupClientManagerRouter(restClientManager: RestClientManager) {
+    this.app.get('/streaming/subscribe', (req, res) => {
+      const clientId = this.clientSubscribeUC.execute();
+      res.send(clientId);
+    });
+
+    this.app.post('/streaming/changeSubscription', (req, res) => {
+      if (!req.body['clientId'] || typeof req.body['clientId'] !== 'string') {
+        res.status(400).json({
+          name: 'ClientIdMissing',
+          detail: 'Body object missing clientId field',
+        });
+        return;
+      }
+
+      if (!this.isArrayOfSensorId(req.body['sensorIds'])) {
+        res.status(400).json({
+          name: 'InvalidSensorList',
+          detail: 'Body should be an array of number (sensor IDs)',
+        });
+        return;
+      }
+
+      try {
+        this.changeSubscriptionUC.execute(req.body['clientId'], req.body['sensorIds']);
+        res.sendStatus(200);
+      } catch (err) {
+        res.status(400);
+        if (err instanceof ClientIdNotFound) {
+          res.json({
+            name: 'ClientIdNotFound',
+            detail: 'Client not subscribed yet.',
+          });
+          return;
+        }
+
+        res.json({
+          name: 'InternalError',
+          detail: 'Internal error occurred',
+        });
+      }
+    });
+
+    this.app.use('/streaming', restClientManager.getRouter());
+  }
+
+  private isArrayOfSensorId(object: unknown): boolean {
+    return Array.isArray(object) && object.every((element) => typeof element === 'number');
   }
 
   private handleGetSensorList: RequestHandler<null, SensorDto[] | ErrorMsg> = async (req, res) => {
@@ -101,37 +149,6 @@ export class ExpressServer implements ClientManager {
     }
   };
 
-  private setupClientManagerRoute() {
-    const router = express.Router();
-    router.get<{ clientIdx: ClientId }>('/client/:clientIdx', (req, res) => {
-      const clientIdx = req.params.clientIdx;
-
-      if (!this.clientConnectionMap.has(clientIdx)) {
-        res.send('Route not exist');
-        return;
-      }
-
-      res.set({
-        'Cache-Control': 'no-cache',
-        'Content-Type': 'text/event-stream',
-        'Access-Control-Allow-Origin': '*',
-        Connection: 'keep-alive',
-      });
-      res.flushHeaders();
-
-      const connection = this.clientConnectionMap.get(clientIdx);
-      connection.resp = res;
-      console.log(this.clientConnectionMap);
-
-      res.on('close', () => {
-        res.end();
-        this.clientConnectionMap.delete(clientIdx);
-      });
-    });
-
-    this.app.use('/streaming', router);
-  }
-
   startListening() {
     this.server = this.app.listen(this.listeningPort);
     this.logger.info(`Start listening at port: ${this.listeningPort}`);
@@ -140,38 +157,5 @@ export class ExpressServer implements ClientManager {
   stopListening() {
     this.logger.info(`Shutting down`);
     this.server.close();
-  }
-
-  generateNewClientId(): ClientId {
-    return randomUUID();
-  }
-
-  openConnectionToClient(id: ClientId): void {
-    this.clientConnectionMap.set(id, {
-      subscribedSensorIdx: [],
-      resp: null,
-    });
-    console.log(this.clientConnectionMap);
-  }
-
-  changeClientSubscription(clientId: ClientId, sensorIdx: SensorId[]): void {
-    const connection = this.clientConnectionMap.get(clientId);
-    if (connection === undefined) {
-      throw new ClientIdNotFound(clientId);
-    }
-
-    connection.subscribedSensorIdx = sensorIdx;
-  }
-
-  propagateNotifications(notificationList: Notification[]) {
-    throw notificationList;
-  }
-
-  propagateSensorReadEvent(event: SensorReadEvent) {
-    for (const connection of this.clientConnectionMap.values()) {
-      if (event.sensorId in connection.subscribedSensorIdx) {
-        connection.resp.json(event);
-      }
-    }
   }
 }
