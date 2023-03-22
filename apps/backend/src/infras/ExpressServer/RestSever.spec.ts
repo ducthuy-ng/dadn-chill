@@ -1,4 +1,4 @@
-import fetch from 'node-fetch';
+import axios from 'axios';
 import { ExpressServer } from '.';
 import { Sensor } from '../../core/domain/Sensor';
 import { GetSensorListUseCase, GetSingleSensorUseCase } from '../../core/usecases';
@@ -45,18 +45,14 @@ describe('Test REST API server', () => {
   });
 
   test('Test get sensors of page 1', async () => {
-    const resp = (await fetch('http://localhost:3333/sensors?pageNum=1')) as Response;
-    const content = await resp.json();
-
-    expect(content).not.toBeNull();
-    expect(content).toHaveLength(1);
+    const resp = await axios.get('http://localhost:3333/sensors?pageNum=1');
+    expect(resp.data).not.toBeNull();
+    expect(resp.data).toHaveLength(1);
   });
 
   test('missing query `pageNum` should return as page 1', async () => {
-    const resp = (await fetch('http://localhost:3333/sensors')) as Response;
-    const content = await resp.json();
-
-    expect(content).not.toBeNull();
-    expect(content).toHaveLength(1);
+    const resp = await axios.get('http://localhost:3333/sensors');
+    expect(resp.data).not.toBeNull();
+    expect(resp.data).toHaveLength(1);
   });
 });
