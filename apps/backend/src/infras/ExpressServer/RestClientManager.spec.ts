@@ -1,9 +1,9 @@
+import axios from 'axios';
 import express from 'express';
 import { SensorReadEvent } from '../../core/domain/SensorReadEvent';
 import { BSLogger } from '../BSLogger';
 import { sleep } from '../testingTools';
 import { RestClientManager } from './RestClientManager';
-import fetch from 'node-fetch';
 
 jest.setTimeout(10000);
 
@@ -44,8 +44,8 @@ describe('Test REST Client Manager', () => {
 
     clientManager.propagateSensorReadEvent(event1);
 
-    const resp = (await fetch(`http://localhost:3334/streaming/events/${clientId}`)) as Response;
-    const content = await resp.json();
+    const resp = await axios.get(`http://localhost:3334/streaming/events/${clientId}`);
+    const content = await resp.data;
     expect(content).toContainEqual(event1);
 
     server.close();
@@ -66,9 +66,8 @@ describe('Test REST Client Manager', () => {
 
     clientManager.propagateSensorReadEvent(event2);
 
-    const resp = (await fetch(`http://localhost:3334/streaming/events/${clientId}`)) as Response;
-    const content = await resp.json();
-    expect(content).toHaveLength(0);
+    const resp = await axios.get(`http://localhost:3334/streaming/events/${clientId}`);
+    expect(resp.data).toHaveLength(0);
 
     server.close();
     await sleep(3);
@@ -89,11 +88,10 @@ describe('Test REST Client Manager', () => {
     clientManager.propagateSensorReadEvent(event1);
     clientManager.propagateSensorReadEvent(event2);
 
-    const resp = (await fetch(`http://localhost:3334/streaming/events/${clientId}`)) as Response;
-    const content = await resp.json();
-    expect(content).toHaveLength(2);
-    expect(content).toContainEqual(event1);
-    expect(content).toContainEqual(event2);
+    const resp = await axios.get(`http://localhost:3334/streaming/events/${clientId}`);
+    expect(resp.data).toHaveLength(2);
+    expect(resp.data).toContainEqual(event1);
+    expect(resp.data).toContainEqual(event2);
 
     server.close();
     await sleep(3);
