@@ -32,4 +32,8 @@ export class EnvironmentVariablesProcessor {
 
     return this.envVars['MQTT_HOSTNAME'];
   }
+
+  public getExpressListeningPort(): number {
+    return parseInt(this.envVars['EXPRESS_PORT']) || 3333;
+  }
 }

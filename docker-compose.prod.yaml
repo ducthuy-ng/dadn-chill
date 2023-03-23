@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  mqtt:
+    image: eclipse-mosquitto:2.0.15
+    volumes:
+      - mqtt-volume:/mosquitto/data
+      - mqtt-volume:/mosquitto/log
+      - ./docker/mosquitto.conf:/mosquitto/config/mosquitto.conf
+    networks:
+      - chill-network
+
+  postgres:
+    image: postgres:15.2-alpine3.17
+    volumes:
+      - postgres-volume:/var/lib/postgresql/data
+      - ./apps/backend/data:/docker-entrypoint-initdb.d:ro
+    environment:
+      - POSTGRES_USER=backend
+      - POSTGRES_PASSWORD=/run/secrets/chill_postgres_password
+    networks:
+      - backend-network
+
+  backend:
+    build:
+      context: ./apps/backend
+    networks:
+      - chill-network
+      - backend-network
+    environment:
+      - POSTGRES_CONNECTION_STRING=/run/secrets/chill_postgres_connection_string
+
+  frontend:
+    build:
+      context: ./apps/frontend
+
+secrets:
+  chill_postgres_password:
+    external: true
+
+  chill_postgres_connection_string:
+    external: true
+
+volumes:
+  postgres-volume:
+  mqtt-volume:
+
+networks:
+  chill-network:
+  backend-network:

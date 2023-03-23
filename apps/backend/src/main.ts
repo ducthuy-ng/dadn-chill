@@ -51,7 +51,7 @@ const eventMQ = new MqttEventMQ(
 eventMQ.onNewEvent(processReadEventUC);
 
 const server = new ExpressServer(
-  3333,
+  envVarProcessor.getExpressListeningPort(),
   getSingleSensorUC,
   getSensorListUC,
   clientSubscribeUC,
