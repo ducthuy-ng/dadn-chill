@@ -35,6 +35,8 @@ export class ExpressServer {
     logger: Logger,
     frontendEndpoint = 'localhost:4200'
   ) {
+    this.logger = logger;
+
     this.app = express();
 
     this.setupBodyParser();
@@ -48,8 +50,6 @@ export class ExpressServer {
     this.getSensorListUC = getSensorListUC;
     this.clientSubscribeUC = clientSubscribeUC;
     this.changeSubscriptionUC = changeSubscriptionUC;
-
-    this.logger = logger;
   }
 
   private setupBodyParser() {
@@ -57,9 +57,13 @@ export class ExpressServer {
   }
 
   private setupCORS(frontendEndpoint: string) {
+    const frontendEndpointList = frontendEndpoint.split(',');
+    this.logger.debug('Open CORS for Frontend', frontendEndpointList);
+
     this.app.use(
       cors({
-        origin: frontendEndpoint,
+        origin: frontendEndpointList,
+        credentials: true,
       })
     );
   }
