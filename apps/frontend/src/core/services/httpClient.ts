@@ -49,7 +49,7 @@ class Http {
 
   initHttp() {
     const http = axios.create({
-      baseURL: process.env.REACT_APP_API_URL,
+      baseURL: import.meta.env.VITE_HOST,
       headers,
       withCredentials: true,
     });
