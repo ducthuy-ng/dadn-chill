@@ -14,8 +14,8 @@ jobs:
         with:
           node-version: 16.18
 
-      - name: Install all dependencies
-        run: npm ci
+      - name: Setup dev
+        run: npm run setup:dev
 
       - name: Test frontend
         run: npm run test:frontend

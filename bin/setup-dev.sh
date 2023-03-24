@@ -2,5 +2,5 @@
 
 set -euf
 
-npm i
+npm ci
 sh -c bin/setup-env-files.sh

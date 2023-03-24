@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -euf
+set -eufx
 
 __cleanup() {
   docker compose -f ./docker-compose.dev.yaml down --volumes
@@ -8,7 +8,7 @@ __cleanup() {
 
   # Wait for backend to exit cleanly
   sleep 2
-  
+
   exit $E2E_EXITCODE
 }
 trap __cleanup EXIT
