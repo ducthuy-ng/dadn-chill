@@ -23,6 +23,9 @@ jobs:
       - name: Test backend
         run: npm run test:backend
 
+      - name: Test Backend E2E
+        run: npm run test:backend-e2e
+
       - name: Lint check (frontend)
         run: npx nx lint frontend
 

@@ -14,7 +14,7 @@ class DummyProcessReadEvent implements IProcessReadEventUC {
   });
 }
 
-describe('Kafka event MQ testing', () => {
+describe.skip('Kafka event MQ testing', () => {
   const testKafkaBrokers = ['localhost:9092'];
   const testTopicName = 'test-topic';
   const kafka = new Kafka({ brokers: testKafkaBrokers, logLevel: logLevel.NOTHING });

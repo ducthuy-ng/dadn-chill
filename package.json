@@ -14,6 +14,7 @@
     "lint": "npx nx run-many --target=lint --all",
     "format": "npx nx format:write --all",
     "test:backend": "sh -c ./bin/test-backend.sh",
+    "test:backend-e2e": "sh -c ./bin/test-backend-e2e.sh",
     "test:frontend": "npx nx test frontend",
     "clean:env-files": "sh -c ./bin/clean-env-files.sh",
     "clean:dev": "sh -c './bin/clean-dev.sh'"
