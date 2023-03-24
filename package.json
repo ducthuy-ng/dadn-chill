@@ -3,6 +3,7 @@
   "version": "0.2.0",
   "license": "MIT",
   "scripts": {
+    "setup:ci": "sh -c ./bin/setup-ci.sh",
     "setup:dev": "sh -c './bin/setup-dev.sh'",
     "setup:env-files": "sh -c './bin/setup-env-files.sh'",
     "dev:frontend": "npx nx serve frontend",
