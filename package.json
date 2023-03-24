@@ -3,6 +3,7 @@
   "version": "0.2.0",
   "license": "MIT",
   "scripts": {
+    "setup:ci": "sh -c ./bin/setup-ci.sh",
     "setup:dev": "sh -c './bin/setup-dev.sh'",
     "setup:env-files": "sh -c './bin/setup-env-files.sh'",
     "dev:frontend": "npx nx serve frontend",
@@ -14,6 +15,7 @@
     "lint": "npx nx run-many --target=lint --all",
     "format": "npx nx format:write --all",
     "test:backend": "sh -c ./bin/test-backend.sh",
+    "test:backend-e2e": "sh -c ./bin/test-backend-e2e.sh",
     "test:frontend": "npx nx test frontend",
     "clean:env-files": "sh -c ./bin/clean-env-files.sh",
     "clean:dev": "sh -c './bin/clean-dev.sh'"

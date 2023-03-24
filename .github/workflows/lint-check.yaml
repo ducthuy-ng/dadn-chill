@@ -14,14 +14,17 @@ jobs:
         with:
           node-version: 16.18
 
-      - name: Install all dependencies
-        run: npm ci
+      - name: Setup CI/CI environment
+        run: npm run setup:dev
 
       - name: Test frontend
         run: npm run test:frontend
 
       - name: Test backend
         run: npm run test:backend
+
+      - name: Test Backend E2E
+        run: npm run test:backend-e2e
 
       - name: Lint check (frontend)
         run: npx nx lint frontend
