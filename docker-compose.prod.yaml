@@ -51,6 +51,8 @@ services:
     build:
       context: .
       dockerfile: apps/frontend/Dockerfile
+    environment:
+      - VITE_HOST=https://cg-monitor.duckdns.org
 
 secrets:
   chill_postgres_password:
