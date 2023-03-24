@@ -24,7 +24,7 @@ import { PGRepository } from './infras/PGRepository';
 const envVarProcessor = new EnvironmentVariablesProcessor(process.env);
 
 const PGRepo = new PGRepository(
-  envVarProcessor.getPGConnString(),
+  envVarProcessor.getPGConnectionConfigs(),
   new BSLogger('PGRepo', { level: LogLevel.DEBUG })
 );
 
@@ -51,7 +51,7 @@ const eventMQ = new MqttEventMQ(
 eventMQ.onNewEvent(processReadEventUC);
 
 const server = new ExpressServer(
-  3333,
+  envVarProcessor.getExpressListeningPort(),
   getSingleSensorUC,
   getSensorListUC,
   clientSubscribeUC,
@@ -73,3 +73,4 @@ async function closingServers() {
 
 startServers();
 process.once('SIGINT', closingServers);
+process.once('SIGTERM', closingServers);
