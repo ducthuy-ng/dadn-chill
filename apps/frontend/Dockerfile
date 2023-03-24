@@ -9,20 +9,8 @@ RUN npx nx run frontend:build:production --verbose
 
 # ====================================================
 
-FROM docker.io/node:lts-alpine
+FROM nginx:1.23.3-alpine-slim
 
-ENV HOST=0.0.0.0
-ENV PORT=3000
+EXPOSE 80
 
-WORKDIR /app
-
-COPY --from=builder /app/dist/apps/frontend .
-COPY ./package*.json .
-
-RUN addgroup --system frontend && \
-  adduser --system -G frontend frontend
-RUN chown -R frontend:frontend .
-
-RUN npm ci --omit=dev
-
-CMD [ "node", "frontend" ]
+COPY --from=builder /app/dist/apps/frontend /usr/share/nginx/html

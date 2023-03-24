@@ -44,7 +44,7 @@ export class EnvironmentVariablesProcessor {
   }
 
   public getMqttHostname(): string {
-    if (!this.envVars['MQTT_HOSTNAME']) throw new MissingEnvVar('FRONTEND_ENDPOINT');
+    if (!this.envVars['MQTT_HOSTNAME']) throw new MissingEnvVar('MQTT_HOSTNAME');
 
     return this.envVars['MQTT_HOSTNAME'];
   }

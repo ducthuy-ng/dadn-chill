@@ -73,3 +73,4 @@ async function closingServers() {
 
 startServers();
 process.once('SIGINT', closingServers);
+process.once('SIGTERM', closingServers);
