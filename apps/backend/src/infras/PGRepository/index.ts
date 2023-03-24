@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+import { ConnectionConfig, Pool } from 'pg';
 import { Notification, NotificationRepo } from '../../core/domain/Notification';
 import { Sensor, SensorId } from '../../core/domain/Sensor';
 import { SensorReadEvent } from '../../core/domain/SensorReadEvent';
@@ -13,10 +13,8 @@ export class PGRepository implements SensorRepo, NotificationRepo, ReadEventRepo
 
   private logger: Logger;
 
-  constructor(connectionString: string, logger: Logger) {
-    this.connectionPool = new Pool({
-      connectionString: connectionString,
-    });
+  constructor(connectionConfig: ConnectionConfig, logger: Logger) {
+    this.connectionPool = new Pool(connectionConfig);
     this.connectionPool.on('error', (err) => {
       this.logger.error('Internal server error:', err.message);
       throw err;

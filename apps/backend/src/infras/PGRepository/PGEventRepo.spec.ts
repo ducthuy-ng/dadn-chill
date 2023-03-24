@@ -10,7 +10,10 @@ describe('PGEventRepo test', () => {
 
   const dummyLogger = new BSLogger('test logger', {});
   beforeAll(async () => {
-    sensorRepo = new PGRepository(pgConnString, dummyLogger);
+    sensorRepo = new PGRepository(
+      { host: 'localhost', user: 'backend', password: 'password', database: 'backend' },
+      dummyLogger
+    );
     await pgPool.connect();
   });
 

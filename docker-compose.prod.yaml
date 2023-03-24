@@ -22,23 +22,30 @@ services:
       - backend-network
 
   backend:
+    depends_on:
+      - mqtt
+      - postgres
     build:
-      context: ./apps/backend
+      context: .
+      dockerfile: apps/backend/Dockerfile
     networks:
       - chill-network
       - backend-network
     environment:
-      - POSTGRES_CONNECTION_STRING=/run/secrets/chill_postgres_connection_string
+      - POSTGRES_USER=backend
+      - POSTGRES_PASSWORD=/run/secrets/chill_postgres_password
+      - POSTGRES_DB=backend
+      - POSTGRES_HOST=postgres
 
   frontend:
+    depends_on:
+      - backend
     build:
-      context: ./apps/frontend
+      context: .
+      dockerfile: apps/frontend/Dockerfile
 
 secrets:
   chill_postgres_password:
-    external: true
-
-  chill_postgres_connection_string:
     external: true
 
 volumes:

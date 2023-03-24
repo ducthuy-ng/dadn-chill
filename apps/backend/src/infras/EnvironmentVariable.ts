@@ -1,3 +1,5 @@
+import { ClientConfig } from 'pg';
+
 export class MissingEnvVar implements Error {
   name: 'MissingEnvVar';
   message: string;
@@ -19,6 +21,20 @@ export class EnvironmentVariablesProcessor {
       throw new MissingEnvVar('POSTGRES_CONNECTION_STRING');
 
     return this.envVars['POSTGRES_CONNECTION_STRING'];
+  }
+
+  public getPGConnectionConfigs(): ClientConfig {
+    if (!this.envVars['POSTGRES_USER']) throw new MissingEnvVar('POSTGRES_USER');
+    if (!this.envVars['POSTGRES_PASSWORD']) throw new MissingEnvVar('POSTGRES_PASSWORD');
+    if (!this.envVars['POSTGRES_HOST']) throw new MissingEnvVar('POSTGRES_HOST');
+
+    return {
+      user: this.envVars['POSTGRES_USER'],
+      password: this.envVars['POSTGRES_PASSWORD'],
+      database: this.envVars['POSTGRES_DB'] || this.envVars['POSTGRES_PASSWORD'],
+      host: this.envVars['POSTGRES_HOST'],
+      port: parseInt(this.envVars['POSTGRES_PORT']) || 5432,
+    };
   }
 
   public getFEEndpoint(): string {

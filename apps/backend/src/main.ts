@@ -24,7 +24,7 @@ import { PGRepository } from './infras/PGRepository';
 const envVarProcessor = new EnvironmentVariablesProcessor(process.env);
 
 const PGRepo = new PGRepository(
-  envVarProcessor.getPGConnString(),
+  envVarProcessor.getPGConnectionConfigs(),
   new BSLogger('PGRepo', { level: LogLevel.DEBUG })
 );
 

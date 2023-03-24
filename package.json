@@ -4,6 +4,7 @@
   "license": "MIT",
   "scripts": {
     "setup:dev": "sh -c './bin/setup-dev.sh'",
+    "setup:env-files": "sh -c './bin/setup-env-files.sh'",
     "dev:frontend": "npx nx serve frontend",
     "dev:backend": "sh -c './bin/start-dev-backend.sh'",
     "dev:sensor": "docker compose -f docker-compose.dev.yaml up -d mqtt",
@@ -14,6 +15,7 @@
     "format": "npx nx format:write --all",
     "test:backend": "sh -c ./bin/test-backend.sh",
     "test:frontend": "npx nx test frontend",
+    "clean:env-files": "sh -c ./bin/clean-env-files.sh",
     "clean:dev": "sh -c './bin/clean-dev.sh'"
   },
   "private": true,
