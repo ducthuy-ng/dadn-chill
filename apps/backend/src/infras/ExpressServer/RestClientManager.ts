@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import express, { query, Router } from 'express';
+import express, { Router } from 'express';
 
 import { Notification } from '../../core/domain/Notification';
 import { SensorId } from '../../core/domain/Sensor';
@@ -10,7 +10,6 @@ import {
   ClientManager,
 } from '../../core/usecases/gateways/ClientManager';
 import { Logger } from '../../core/usecases/Logger';
-import { ErrorMsg } from './ErrorMsg';
 
 type ClientDetail = {
   subscribedSensorIdx: SensorId[];
