@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import { Application, Response } from 'express';
+import { Response, Router } from 'express';
 import { Notification } from '../../core/domain/Notification';
 import { SensorId } from '../../core/domain/Sensor';
 import { SensorReadEvent } from '../../core/domain/SensorReadEvent';
@@ -15,8 +15,6 @@ type ClientDetails = {
 type ClientMap = Map<ClientId, ClientDetails>;
 
 type Configs = {
-  expressApp: Application;
-  bindRoute?: string;
   logger: Logger;
 };
 
@@ -28,17 +26,24 @@ export class SseClientManager implements ClientManager {
   private logger: Logger;
   private clientMap: ClientMap = new Map();
 
+  private router: Router;
+
   constructor(configs: Configs) {
     this.logger = configs.logger;
-    this.bindListeningRouteTo(configs.expressApp, configs.bindRoute);
   }
 
-  private bindListeningRouteTo(expressApp: Application, bindRoute = '/streaming') {
-    const fullBindRoute = bindRoute + '/:clientId';
-    expressApp.get(fullBindRoute, (req, res) => {
-      this.logger.debug('received request', req.url);
+  public stopListening() {
+    this.clientMap.forEach((clientDetails) => {
+      clearTimeout(clientDetails.timeOutId);
+    });
+
+    delete this.clientMap;
+  }
+
+  public getListeningRoute(): Router {
+    this.router = Router();
+    this.router.get('/:clientId', (req, res) => {
       const clientId = req.params['clientId'];
-      this.logger.debug('received request', req.url);
 
       const clientDetail = this.clientMap.get(clientId);
       if (!clientDetail) {
@@ -48,14 +53,15 @@ export class SseClientManager implements ClientManager {
       }
 
       this.logger.info('client connected', clientId);
+      this.sendSseHeader(res);
 
       clientDetail.connection = res;
       clearTimeout(clientDetail.timeOutId);
 
-      this.logger.debug('client detail', clientDetail);
-
       res.on('close', () => this.handleCloseResp(clientId, clientDetail));
     });
+
+    return this.router;
   }
 
   private sendUnsubscribedId(res: Response) {
@@ -78,9 +84,13 @@ export class SseClientManager implements ClientManager {
 
   private handleCloseResp(clientId: ClientId, clientDetail: ClientDetails) {
     this.logger.info('client disconnected');
+
     clientDetail.timeOutId = setTimeout(() => {
       this.clientMap.delete(clientId);
     }, SseClientManager.SECONDS_SINCE_LAST_CONNECTED * SECONDS_IN_MILLISECONDS);
+
+    clientDetail.connection.destroy();
+    clientDetail.connection = null;
   }
 
   generateNewClientId(): ClientId {
@@ -110,22 +120,30 @@ export class SseClientManager implements ClientManager {
   }
 
   propagateNotifications(notificationList: Notification[]): void {
-    throw new Error('Method not implemented.');
-  }
+    this.logger.debug('propagating notifications');
 
-  propagateSensorReadEvent(event: SensorReadEvent): void {
     this.clientMap.forEach((clientDetails) => {
-      this.logger.debug('received event', event);
+      if (!clientDetails.connection) return;
 
-      if (clientDetails.connection && clientDetails.subscribedSensorIds.includes(event.sensorId)) {
-        this.logger.debug('message', this.serialize(event));
-        this.logger.debug('client', clientDetails.connection);
-        clientDetails.connection.write(this.serialize(event));
+      for (const notification of notificationList) {
+        clientDetails.connection.write(this.serialize(notification));
       }
     });
   }
 
+  propagateSensorReadEvent(event: SensorReadEvent): void {
+    this.logger.debug('forwarding event', event);
+
+    this.clientMap.forEach((clientDetails) => {
+      if (!clientDetails.connection || !clientDetails.subscribedSensorIds.includes(event.sensorId))
+        return;
+
+      clientDetails.connection.write('event: sensorEvent\n');
+      clientDetails.connection.write(this.serialize(event));
+    });
+  }
+
   private serialize(data: unknown) {
-    return `${JSON.stringify(data)}\n\n`;
+    return `data: ${JSON.stringify(data)}\n\n`;
   }
 }

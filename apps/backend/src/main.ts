@@ -20,6 +20,7 @@ import { ExpressServer } from './infras/ExpressServer';
 import { RestClientManager } from './infras/ExpressServer/RestClientManager';
 import { MqttEventMQ } from './infras/MqttEventMQ';
 import { PGRepository } from './infras/PGRepository';
+import { SseClientManager } from './infras/SseClientManager';
 
 const envVarProcessor = new EnvironmentVariablesProcessor(process.env);
 
@@ -28,7 +29,11 @@ const PGRepo = new PGRepository(
   new BSLogger('PGRepo', { level: LogLevel.DEBUG })
 );
 
-const clientManager = new RestClientManager(new BSLogger('RestClientManager', {}));
+// const clientManager = new RestClientManager(new BSLogger('RestClientManager', {}));
+const clientManager = new SseClientManager({
+  logger: new BSLogger('SseClientManager', {}),
+  
+});
 
 const getSingleSensorUC = new GetSingleSensorUseCase(PGRepo);
 const getSensorListUC = new GetSensorListUseCase(PGRepo);

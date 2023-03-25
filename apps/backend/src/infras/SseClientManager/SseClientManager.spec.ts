@@ -1,5 +1,4 @@
 import EventSource from 'eventsource';
-import axios, { AxiosError } from 'axios';
 import express from 'express';
 import { Server } from 'http';
 import { SseClientManager } from '.';
@@ -8,21 +7,12 @@ import { LogLevel } from '../../core/usecases/Logger';
 import { BSLogger } from '../BSLogger';
 import { sleep } from '../testingTools';
 
-jest.useFakeTimers();
+jest.setTimeout(10000);
 
 describe('Unit test for SSE Client Manager', () => {
   const app = express();
-
-  const clientMgr = new SseClientManager({
-    logger: new BSLogger('test-sse', { level: LogLevel.DEBUG }),
-    expressApp: app,
-  });
-
-  app.use('/', (req, res) => {
-    res.send('Hello');
-  });
-
   let server: Server;
+  let clientMgr: SseClientManager;
 
   const event1: SensorReadEvent = {
     sensorId: 1,
@@ -34,6 +24,7 @@ describe('Unit test for SSE Client Manager', () => {
       earthMoisture: 4,
     },
   };
+
   const event2: SensorReadEvent = {
     sensorId: 2,
     readTimestamp: new Date().toISOString(),
@@ -46,48 +37,74 @@ describe('Unit test for SSE Client Manager', () => {
   };
 
   beforeEach((done) => {
-    server = app.listen(3000, () => done());
+    clientMgr = new SseClientManager({
+      logger: new BSLogger('test-logger', { level: LogLevel.DEBUG }),
+    });
+    app.use('/streaming', clientMgr.getListeningRoute());
+    server = app.listen(3000, done);
   });
 
-  afterAll((done) => {
-    server.close(() => done());
+  afterEach((done) => {
+    clientMgr.stopListening();
+    server.close(done);
   });
 
-  test.skip('subscribe should return an ClientId', (done) => {
-    // Cannot make onmessage work
+  test('subscribe should return an ClientId', (done) => {
     const clientId = clientMgr.generateNewClientId();
     clientMgr.openConnectionToClient(clientId);
     clientMgr.changeClientSubscription(clientId, [1]);
 
     const eventSource = new EventSource(`http://localhost:3000/streaming/${clientId}`);
 
-    eventSource.onopen = (event) => {
-      console.log(event);
-    };
-
-    eventSource.onmessage = (event) => {
-      console.log(event);
+    eventSource.addEventListener('sensorEvent', (event) => {
+      const sensorEvent = JSON.parse(event.data);
+      expect(sensorEvent).toEqual(event1);
       eventSource.close();
-      done();
-    };
 
-    eventSource.onerror = (error) => {
-      console.error(error.data);
-    };
+      sleep(2).then(done);
+    });
 
-    sleep(2).then(() => {
+    sleep(1).then(() => {
       clientMgr.propagateSensorReadEvent(event1);
     });
   });
 
-  test.skip('After SECONDS_SINCE_LAST_CONNECTED, clientMap should clear it', (done) => {
-    const clientId = clientMgr.generateNewClientId();
-    clientMgr.openConnectionToClient(clientId);
+  test('different subscription should not receive different events', (done) => {
+    const clientId1 = clientMgr.generateNewClientId();
+    clientMgr.openConnectionToClient(clientId1);
+    clientMgr.changeClientSubscription(clientId1, [1]);
 
-    jest.advanceTimersByTime(SseClientManager.SECONDS_SINCE_LAST_CONNECTED * 1000);
+    const es1Events = [];
+    const es2Events = [];
 
-    axios.get(`http://localhost:3000/streaming/${clientId}`, {}).catch((err: AxiosError) => {
-      expect(err.response?.data['name']).toBe('ClientIdNotFound');
+    const eventSource1 = new EventSource(`http://localhost:3000/streaming/${clientId1}`);
+    eventSource1.addEventListener('sensorEvent', (event) => {
+      const sensorEvent = JSON.parse(event.data);
+      es1Events.push(sensorEvent);
+      eventSource1.close();
+    });
+
+    const clientId2 = clientMgr.generateNewClientId();
+    clientMgr.openConnectionToClient(clientId2);
+    clientMgr.changeClientSubscription(clientId2, [2]);
+
+    const eventSource2 = new EventSource(`http://localhost:3000/streaming/${clientId2}`);
+    eventSource2.addEventListener('sensorEvent', (event) => {
+      const sensorEvent = JSON.parse(event.data);
+      es2Events.push(sensorEvent);
+      eventSource2.close();
+    });
+
+    sleep(1).then(() => {
+      clientMgr.propagateSensorReadEvent(event1);
+    });
+    sleep(2).then(() => {
+      clientMgr.propagateSensorReadEvent(event2);
+    });
+
+    sleep(4).then(() => {
+      expect(es1Events).toContainEqual(event1);
+      expect(es1Events).toContainEqual(event1);
       done();
     });
   });
