@@ -45,22 +45,19 @@ describe('Test MQTT Event MQ', () => {
 
   beforeAll(async () => {
     mqttClient = mqtt.connect('mqtt://localhost:1883');
-    await sleep(2);
+    // await sleep(2);
   });
 
   afterAll(async () => {
-    mqttClient.end(true);
-    await sleep(2);
+    await mqttClient.end(true);
   });
 
-  test('Test isSensorReadEvent checker', () => {
+  test('Test isSensorReadEvent checker', async () => {
     const message =
       '{"sensorId":1,"readTimestamp":"2023-03-16T11:21:36.167Z","sensorValue":{"temperature":1,"humidity":1,"lightIntensity":1,"earthMoisture":1}}';
     const parsedMessage = JSON.parse(message);
-    const dummyLogger = new BSLogger('eventMQ logger', { level: LogLevel.DEBUG });
-    const eventMQ = new MqttEventMQ('mqtt://localhost:1883', testTopicName, dummyLogger);
 
-    expect(eventMQ.isSensorReadEvent(parsedMessage)).toBeTruthy();
+    expect(MqttEventMQ.isSensorReadEvent(parsedMessage)).toBeTruthy();
   });
 
   test('Start test', async () => {

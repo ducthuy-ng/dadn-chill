@@ -2,6 +2,8 @@
 
 set -eufx
 
+TEST_EXITCODE=1
+
 __cleanup() {
   docker compose -f ./docker-compose.dev.yaml down --volumes
   exit $TEST_EXITCODE
@@ -13,5 +15,5 @@ docker compose -f ./docker-compose.dev.yaml up -d
 # Waiting for container to stablize
 sleep 5
 
-npx nx test backend --verbose
+npx nx test backend --verbose --detectOpenHandles
 TEST_EXITCODE=$?

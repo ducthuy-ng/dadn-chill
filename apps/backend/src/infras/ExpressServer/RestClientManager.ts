@@ -1,23 +1,19 @@
 import { randomUUID } from 'crypto';
-import express, { query, Router } from 'express';
+import express, { Router } from 'express';
 
 import { Notification } from '../../core/domain/Notification';
 import { SensorId } from '../../core/domain/Sensor';
 import { SensorReadEvent } from '../../core/domain/SensorReadEvent';
-import {
-  ClientId,
-  ClientIdNotFound,
-  ClientManager,
-} from '../../core/usecases/gateways/ClientManager';
+import { ClientId, ClientIdNotFound } from '../../core/usecases/gateways/ClientManager';
 import { Logger } from '../../core/usecases/Logger';
-import { ErrorMsg } from './ErrorMsg';
+import { HttpClientManager } from './HttpClientManager';
 
 type ClientDetail = {
   subscribedSensorIdx: SensorId[];
   eventMQ: SensorReadEvent[];
 };
 
-export class RestClientManager implements ClientManager {
+export class RestClientManager implements HttpClientManager {
   private clientBuffer: Map<ClientId, ClientDetail>;
 
   private router: Router;
@@ -60,7 +56,7 @@ export class RestClientManager implements ClientManager {
     });
   }
 
-  getRouter(): express.Router {
+  getListeningRouter(): express.Router {
     return this.router;
   }
 
