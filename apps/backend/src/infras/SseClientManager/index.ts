@@ -5,6 +5,7 @@ import { SensorId } from '../../core/domain/Sensor';
 import { SensorReadEvent } from '../../core/domain/SensorReadEvent';
 import { ClientId, ClientManager } from '../../core/usecases/gateways/ClientManager';
 import { Logger } from '../../core/usecases/Logger';
+import { HttpClientManager } from '../ExpressServer/HttpClientManager';
 
 type ClientDetails = {
   connection?: Response;
@@ -20,7 +21,7 @@ type Configs = {
 
 const SECONDS_IN_MILLISECONDS = 1000;
 
-export class SseClientManager implements ClientManager {
+export class SseClientManager implements HttpClientManager {
   public static SECONDS_SINCE_LAST_CONNECTED = 300;
 
   private logger: Logger;
@@ -40,7 +41,7 @@ export class SseClientManager implements ClientManager {
     delete this.clientMap;
   }
 
-  public getListeningRoute(): Router {
+  public getListeningRouter(): Router {
     this.router = Router();
     this.router.get('/:clientId', (req, res) => {
       const clientId = req.params['clientId'];

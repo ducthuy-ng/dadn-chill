@@ -1,7 +1,3 @@
-/**
- * This is not a production server yet!
- * This is only a minimal backend to get started.
- */
 import * as dotenv from 'dotenv';
 dotenv.config();
 
@@ -17,7 +13,6 @@ import { ClientSubscribeUseCase } from './core/usecases/StartClient';
 import { BSLogger } from './infras/BSLogger';
 import { EnvironmentVariablesProcessor } from './infras/EnvironmentVariable';
 import { ExpressServer } from './infras/ExpressServer';
-import { RestClientManager } from './infras/ExpressServer/RestClientManager';
 import { MqttEventMQ } from './infras/MqttEventMQ';
 import { PGRepository } from './infras/PGRepository';
 import { SseClientManager } from './infras/SseClientManager';
@@ -32,7 +27,6 @@ const PGRepo = new PGRepository(
 // const clientManager = new RestClientManager(new BSLogger('RestClientManager', {}));
 const clientManager = new SseClientManager({
   logger: new BSLogger('SseClientManager', {}),
-  
 });
 
 const getSingleSensorUC = new GetSingleSensorUseCase(PGRepo);
@@ -72,6 +66,7 @@ function startServers() {
 }
 
 async function closingServers() {
+  await PGRepo.disconnect();
   server.stopListening();
   await eventMQ.stopListening();
 }

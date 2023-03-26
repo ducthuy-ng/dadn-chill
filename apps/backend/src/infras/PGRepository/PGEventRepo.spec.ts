@@ -14,10 +14,10 @@ describe('PGEventRepo test', () => {
       { host: 'localhost', user: 'backend', password: 'password', database: 'backend' },
       dummyLogger
     );
-    await pgPool.connect();
   });
 
   afterAll(async () => {
+    await pgPool.end();
     await sensorRepo.disconnect();
   });
 

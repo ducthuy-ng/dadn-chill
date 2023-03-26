@@ -24,13 +24,13 @@ export class MqttEventMQ implements EventMQ {
       this.logger.debug(payload.toString());
 
       const parsedMessage = JSON.parse(payload.toString());
-      if (!this.isSensorReadEvent(parsedMessage)) return;
+      if (!MqttEventMQ.isSensorReadEvent(parsedMessage)) return;
 
       this.processReadEventUC.execute(parsedMessage);
     });
   }
 
-  isSensorReadEvent(obj: unknown): obj is SensorReadEvent {
+  public static isSensorReadEvent(obj: unknown): obj is SensorReadEvent {
     return (
       obj &&
       typeof obj === 'object' &&
