@@ -3,4 +3,4 @@
 set -euf
 
 npm i
-sh -c bin/setup-env-files
+sh -c ./bin/setup-env-files.sh
