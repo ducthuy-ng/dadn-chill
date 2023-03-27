@@ -12,6 +12,7 @@ import { ClientSubscribeUseCase } from '../../core/usecases/StartClient';
 import { ErrorMsg } from './ErrorMsg';
 import { RestClientManager } from './RestClientManager';
 import { GenerateDto, SensorDto } from './SensorDto';
+import { HttpClientManager } from './HttpClientManager';
 
 export class ExpressServer {
   private app: Application;
@@ -31,7 +32,7 @@ export class ExpressServer {
     getSensorListUC: GetSensorListUseCase,
     clientSubscribeUC: ClientSubscribeUseCase,
     changeSubscriptionUC: ChangeSubscriptionUseCase,
-    restClientManager: RestClientManager,
+    httpClientManager: HttpClientManager,
     logger: Logger,
     frontendEndpoint = 'localhost:4200'
   ) {
@@ -42,7 +43,7 @@ export class ExpressServer {
     this.setupBodyParser();
     this.setupCORS(frontendEndpoint);
     this.setupRestRouter();
-    this.setupClientManagerRouter(restClientManager);
+    this.setupClientManagerRouter(httpClientManager);
 
     this.listeningPort = listeningPort;
 
@@ -76,7 +77,7 @@ export class ExpressServer {
     this.app.use('/', router);
   }
 
-  private setupClientManagerRouter(restClientManager: RestClientManager) {
+  private setupClientManagerRouter(restClientManager: HttpClientManager) {
     this.app.get('/streaming/subscribe', (req, res) => {
       const clientId = this.clientSubscribeUC.execute();
       res.send(clientId);
@@ -119,7 +120,7 @@ export class ExpressServer {
       }
     });
 
-    this.app.use('/streaming', restClientManager.getRouter());
+    this.app.use('/streaming', restClientManager.getListeningRouter());
   }
 
   private isArrayOfSensorId(object: unknown): boolean {

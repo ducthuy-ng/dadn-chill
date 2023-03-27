@@ -34,7 +34,7 @@ describe('Test REST Client Manager', () => {
     const clientManager = new RestClientManager(new BSLogger('dummy-logger', { target: '' }));
 
     const app = express();
-    app.use('/streaming', clientManager.getRouter());
+    app.use('/streaming', clientManager.getListeningRouter());
     const server = app.listen(3334);
     await sleep(2);
 
@@ -56,7 +56,7 @@ describe('Test REST Client Manager', () => {
     const clientManager = new RestClientManager(new BSLogger('dummy-logger', { target: '' }));
 
     const app = express();
-    app.use('/streaming', clientManager.getRouter());
+    app.use('/streaming', clientManager.getListeningRouter());
     const server = app.listen(3334);
     await sleep(2);
 
@@ -77,7 +77,7 @@ describe('Test REST Client Manager', () => {
     const clientManager = new RestClientManager(new BSLogger('dummy-logger', { target: '' }));
 
     const app = express();
-    app.use('/streaming', clientManager.getRouter());
+    app.use('/streaming', clientManager.getListeningRouter());
     const server = app.listen(3334);
     await sleep(2);
 

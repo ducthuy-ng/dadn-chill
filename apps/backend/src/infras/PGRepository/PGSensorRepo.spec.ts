@@ -9,7 +9,10 @@ describe('PGSensorRepo test', () => {
 
   const dummyLogger = new BSLogger('test logger', { target: '' });
   beforeAll(async () => {
-    sensorRepo = new PGRepository(PgConnString, dummyLogger);
+    sensorRepo = new PGRepository(
+      { host: 'localhost', user: 'backend', password: 'password', database: 'backend' },
+      dummyLogger
+    );
   });
 
   afterAll(async () => {

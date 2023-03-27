@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  mqtt:
+    image: eclipse-mosquitto:2.0.15
+    volumes:
+      - mqtt-volume:/mosquitto/data
+      - mqtt-volume:/mosquitto/log
+      - ./docker/mosquitto.conf:/mosquitto/config/mosquitto.conf
+    ports:
+      - '1883:1883'
+    networks:
+      - chill-network
+
+  postgres:
+    image: postgres:15.2-alpine3.17
+    volumes:
+      - postgres-volume:/var/lib/postgresql/data
+      - ./apps/backend/data:/docker-entrypoint-initdb.d:ro
+    environment:
+      - POSTGRES_USER=backend
+      - POSTGRES_PASSWORD=/run/secrets/chill_postgres_password
+    networks:
+      - backend-network
+
+  backend:
+    depends_on:
+      - mqtt
+      - postgres
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    ports:
+      - '3333:3333'
+    networks:
+      - chill-network
+      - backend-network
+    environment:
+      - POSTGRES_USER=backend
+      - POSTGRES_PASSWORD=/run/secrets/chill_postgres_password
+      - POSTGRES_DB=backend
+      - POSTGRES_HOST=postgres
+      - FRONTEND_ENDPOINT=https://cg-monitor.duckdns.org
+      - MQTT_HOSTNAME=mqtt://mqtt:1883
+
+  frontend:
+    depends_on:
+      - backend
+    ports:
+      - '4200:80'
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+    environment:
+      - VITE_HOST=https://cg-monitor.duckdns.org
+
+secrets:
+  chill_postgres_password:
+    external: true
+
+volumes:
+  postgres-volume:
+  mqtt-volume:
+
+networks:
+  chill-network:
+  backend-network:
