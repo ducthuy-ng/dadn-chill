@@ -1,4 +1,4 @@
-import { LimitCheckMiddleware } from '.';
+  import { LimitCheckMiddleware } from '.';
 import { Sensor } from '../Sensor';
 import { SensorReadEvent } from '../SensorReadEvent';
 import { Notification } from '../Notification';
@@ -15,7 +15,7 @@ class CheckHumidityMiddleware extends LimitCheckMiddleware {
 
     if (event.sensorValue.humidity <= this.humidityThreshold) {
       returnNotifications.push(
-        new Notification(processingSensor, 'Alert: too dry', 'The humidity is below threshold')
+        Notification.generate(processingSensor, 'Alert: too dry', 'The humidity is below threshold')
       );
     }
 

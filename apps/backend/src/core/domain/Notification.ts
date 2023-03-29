@@ -1,70 +1,74 @@
 import { randomUUID } from 'crypto';
 import { Sensor } from './Sensor';
 
-class Notification {
-  private id: string;
-  private fromSensorId: number;
+export class HeaderIsTooLong implements Error {
+  name = 'HeaderIsTooLong';
+  message = 'Header should not be longer than 100 characters';
+}
+
+export class Notification {
+  readonly id: string;
+  readonly idOfOriginSensor: number;
 
   // Redundancy for performance
-  private sensorName: string;
+  readonly nameOfOriginSensor: string;
 
-  private createdDate: Date;
+  readonly createdDate: Date;
 
-  private header: string;
-  private content: string;
+  _header: string;
+  _content: string;
 
-  constructor(generatedSensor: Sensor, header: string, content: string) {
-    this.id = randomUUID();
-    this.setFromSensorId(generatedSensor.getId());
-    this.setSensorName(generatedSensor.getName());
+  constructor(
+    id: string,
+    originSensorId: number,
+    originSensorName: string,
+    createdDate: Date,
+    header: string,
+    content: string
+  ) {
+    this.id = id;
+    this.idOfOriginSensor = originSensorId;
+    this.nameOfOriginSensor = originSensorName;
 
-    this.createdDate = new Date();
+    this.createdDate = createdDate;
 
-    this.setHeader(header);
-    this.setContent(content);
+    this._header = header;
+    this._content = content;
   }
 
-  setFromSensorId(fromSensorId: number) {
-    this.fromSensorId = fromSensorId;
+  public static generate(originSensor: Sensor, header: string, content: string) {
+    return new Notification(
+      randomUUID(),
+      originSensor.getId(),
+      originSensor.getName(),
+      new Date(),
+      header,
+      content
+    );
   }
 
-  setSensorName(sensorName: string) {
-    this.sensorName = sensorName;
+  /**
+   * @throws HeaderIsTooLong
+   */
+  set header(newHeader: string) {
+    if (newHeader.length > 100) throw new HeaderIsTooLong();
+
+    this._header = newHeader;
   }
 
-  setHeader(header: string) {
-    this.header = header;
+  get header(): string {
+    return this._header;
   }
 
-  setContent(content: string) {
-    this.content = content;
+  get content(): string {
+    return this._content;
   }
 
-  getSensorName(): string {
-    return this.sensorName;
+  set content(newContent: string) {
+    this._content = newContent;
   }
 
-  getHeader(): string {
-    return this.header;
-  }
-
-  getContent(): string {
-    return this.content;
-  }
-
-  getCreatedTimestamp(): string {
+  public getCreatedTimestamp() {
     return this.createdDate.toISOString();
   }
 }
-
-interface NotificationRepo {
-  add(...notifications: Notification[]): void;
-
-  /**
-   *
-   * @throws {PageOutOfRange}
-   */
-  getLastestNotification(pageNum: number): Notification[];
-}
-
-export { Notification, NotificationRepo };

@@ -1,8 +1,9 @@
 import { ConnectionConfig, Pool } from 'pg';
-import { Notification, NotificationRepo } from '../../core/domain/Notification';
+import { Notification } from '../../core/domain/Notification';
 import { Sensor, SensorId } from '../../core/domain/Sensor';
 import { SensorReadEvent } from '../../core/domain/SensorReadEvent';
 import { Logger } from '../../core/usecases/Logger';
+import { NotificationRepo } from '../../core/usecases/repos/NotificationRepo';
 import { FailedToStoreEvent, ReadEventRepo } from '../../core/usecases/repos/ReadEventRepo';
 import { SensorRepo } from '../../core/usecases/repos/SensorRepo';
 
@@ -24,13 +25,36 @@ export class PGRepository implements SensorRepo, NotificationRepo, ReadEventRepo
   }
 
   // TODO
-  add(...notifications: Notification[]): void {
-    return;
+  async add(...notifications: Notification[]): Promise<void> {
+    this.logger.debug('save notification list', notifications);
+
+    const pgClient = await this.connectionPool.connect();
+    try {
+      await pgClient.query('BEGIN');
+      for (const notification of notifications) {
+        await pgClient.query(
+          'INSERT INTO data_pipeline.notification VALUES ($1, $2, $3, $4, $5, $6)',
+          [
+            notification.id,
+            notification.idOfOriginSensor,
+            notification.nameOfOriginSensor,
+            notification.getCreatedTimestamp(),
+            notification.header,
+            notification.content,
+          ]
+        );
+      }
+      await pgClient.query('COMMIT');
+    } catch (e) {
+      this.logger.error('failed to add to PG, rolling back');
+      await pgClient.query('ROLLBACK');
+    } finally {
+      pgClient.release();
+    }
   }
 
-  // TODO
-  getLastestNotification(pageNum: number): Notification[] {
-    return [];
+  getLatestNotification(pageNum: number): Promise<Notification[]> {
+    throw new Error('Method not implemented.');
   }
 
   async disconnect() {
@@ -38,7 +62,7 @@ export class PGRepository implements SensorRepo, NotificationRepo, ReadEventRepo
   }
 
   async saveSensor(sensor: Sensor) {
-    this.logger.debug(`Save sensor id: ${sensor.getId()}`);
+    this.logger.debug('Save sensor id', sensor.getId());
     await this.connectionPool.query(
       'INSERT INTO data_pipeline.sensor VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) \
       ON CONFLICT (id) DO UPDATE SET \
