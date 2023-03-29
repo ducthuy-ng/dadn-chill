@@ -1,47 +1,10 @@
 import { LatLngExpression, Map } from 'leaflet';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FaCaretLeft, FaCaretRight, FaEye } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import MapEngine from '../components/Map';
 import { SensorData } from '../core/domain/Sensor';
 import { fetchPagedSensors } from '../core/services/SensorAdapter';
-
-interface DisplayPositionProps {
-  map: Map;
-}
-
-export function DisplayPosition({ map }: DisplayPositionProps) {
-  const center = map.getCenter();
-  const zoom = map.getZoom();
-  const [position, setPosition] = useState(() => map.getCenter());
-
-  const onClick = useCallback(() => {
-    map.setView(center, zoom);
-  }, [map, center, zoom]);
-
-  const onMove = useCallback(() => {
-    setPosition(map.getCenter());
-  }, [map]);
-
-  useEffect(() => {
-    map.on('move', onMove);
-    return () => {
-      map.off('move', onMove);
-    };
-  }, [map, onMove]);
-
-  return (
-    <div
-      className="absolute top-0 right-0 z-50 rounded-lg bg-blue-50 p-4 text-sm text-blue-800 dark:bg-gray-800 dark:text-blue-400"
-      role="alert"
-    >
-      <span className="font-medium">
-        latitude: {position.lat.toFixed(4)}, longitude: {position.lng.toFixed(4)}{' '}
-      </span>
-      <button onClick={onClick}>reset</button>
-    </div>
-  );
-}
 
 export default function HomePage() {
   const [sensorDummyData, getData] = useState<SensorData[]>([]);
@@ -163,8 +126,6 @@ export default function HomePage() {
               location: el.location,
             }))}
           />
-
-          {map ? <DisplayPosition map={map} /> : null}
         </div>
       </div>
     </div>
