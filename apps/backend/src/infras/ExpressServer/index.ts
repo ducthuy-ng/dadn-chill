@@ -10,9 +10,8 @@ import { ChangeSubscriptionUseCase } from '../../core/usecases/ChangeSubscriptio
 import { ClientIdNotFound } from '../../core/usecases/gateways/ClientManager';
 import { ClientSubscribeUseCase } from '../../core/usecases/StartClient';
 import { ErrorMsg } from './ErrorMsg';
-import { RestClientManager } from './RestClientManager';
-import { GenerateDto, SensorDto } from './SensorDto';
 import { HttpClientManager } from './HttpClientManager';
+import { GenerateDto, SensorDto } from './SensorDto';
 
 export class ExpressServer {
   private app: Application;
@@ -162,5 +161,9 @@ export class ExpressServer {
   stopListening() {
     this.logger.info(`Shutting down`);
     this.server.close();
+  }
+
+  use(path: string, callback: RequestHandler) {
+    this.app.use(path, callback);
   }
 }
