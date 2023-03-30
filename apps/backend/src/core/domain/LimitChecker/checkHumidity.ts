@@ -1,4 +1,4 @@
-  import { LimitCheckMiddleware } from '.';
+import { LimitCheckMiddleware } from '.';
 import { Sensor } from '../Sensor';
 import { SensorReadEvent } from '../SensorReadEvent';
 import { Notification } from '../Notification';
