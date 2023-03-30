@@ -66,7 +66,7 @@ export class PGRepository implements SensorRepo, NotificationRepo, ReadEventRepo
           notificationDto.id,
           notificationDto.id_of_origin_sensor,
           notificationDto.name_of_origin_sensor,
-          notificationDto.read_ts,
+          new Date(notificationDto.read_ts),
           notificationDto.header,
           notificationDto.content
         )
@@ -128,6 +128,14 @@ export class PGRepository implements SensorRepo, NotificationRepo, ReadEventRepo
     if (result.rowCount !== 1) return null;
 
     return this.convertDtoToSensor(result.rows[0]);
+  }
+
+  async getAllSensorIds(): Promise<number[]> {
+    const result = await this.connectionPool.query<{ id: SensorId }>(
+      'SELECT id FROM data_pipeline.sensor;'
+    );
+
+    return result.rows.map((row) => row.id);
   }
 
   async getByPage(pageNum: number): Promise<Sensor[]> {

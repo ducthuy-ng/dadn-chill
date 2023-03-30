@@ -50,9 +50,7 @@ describe('Unit tests of PG Notification Repo', () => {
     }
 
     const searchSensor = selectAllNotificationsResult.rows[0];
-    expect((searchSensor.read_ts as Date).toISOString()).toEqual(
-      notification1.getCreatedTimestamp()
-    );
+    expect(searchSensor.read_ts).toEqual(notification1.getCreatedTimestamp());
     expect(searchSensor.header).toEqual(notification1.header);
     expect(searchSensor.content).toEqual(notification1.content);
 
@@ -74,9 +72,7 @@ describe('Unit tests of PG Notification Repo', () => {
     }
 
     const searchSensor1 = selectAllNotificationsResult1.rows[0];
-    expect((searchSensor1.read_ts as Date).toISOString()).toEqual(
-      notification1.getCreatedTimestamp()
-    );
+    expect(searchSensor1.read_ts).toEqual(notification1.getCreatedTimestamp());
     expect(searchSensor1.header).toEqual(notification1.header);
     expect(searchSensor1.content).toEqual(notification1.content);
 
@@ -91,9 +87,7 @@ describe('Unit tests of PG Notification Repo', () => {
     }
 
     const searchSensor2 = selectAllNotificationsResult2.rows[0];
-    expect((searchSensor1.read_ts as Date).toISOString()).toEqual(
-      notification2.getCreatedTimestamp()
-    );
+    expect(searchSensor1.read_ts).toEqual(notification2.getCreatedTimestamp());
     expect(searchSensor2.header).toEqual(notification2.header);
     expect(searchSensor2.content).toEqual(notification2.content);
 

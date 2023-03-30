@@ -15,6 +15,7 @@ describe('Test full Backend pipeline', () => {
       earthMoisture: 1,
     },
   };
+
   test.skip('Test full Backend pipeline', async () => {
     const res = await axios.get(`/streaming/subscribe`);
     const clientId = res.data;
@@ -64,6 +65,35 @@ describe('Test full Backend pipeline', () => {
     await sleep(2);
 
     expect(receivedEvents).toContainEqual(event1);
+  });
+
+  test('Sending a command to sensor1', async () => {
+    const command = {
+      sensorId: 1,
+      details: 0,
+    };
+
+    let hasReceivedCmd = false;
+
+    const mockSensor = await mqtt.connectAsync('mqtt://localhost:1883');
+    await mockSensor.subscribe('controller/sensor-1');
+    mockSensor.on('message', (_topic, payload) => {
+      hasReceivedCmd = true;
+      expect(payload.toString()).toEqual(command.details.toString());
+    });
+
+    await sleep(1);
+
+    const resp = await axios.post('http://localhost:3333/command', command, {
+      validateStatus: () => true,
+    });
+
+    await sleep(1);
+    await mockSensor.end();
+
+    if (!hasReceivedCmd) throw new Error();
+
+    expect(resp.status).toEqual(200);
   });
 });
 

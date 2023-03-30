@@ -16,6 +16,10 @@ export class InMemSensorRepo implements SensorRepo {
     return sensor;
   }
 
+  async getAllSensorIds(): Promise<number[]> {
+    return Array.from(this.sensorMap.keys());
+  }
+
   async getByPage(pageNum: number): Promise<Sensor[]> {
     if ((pageNum - 1) * this.pageSize > this.sensorMap.size) {
       throw new PageOutOfRange(pageNum);

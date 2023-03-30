@@ -1,12 +1,11 @@
 CREATE SCHEMA IF NOT EXISTS data_pipeline;
 
-CREATE TABLE
-  IF NOT EXISTS data_pipeline.user (
-    id UUID PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL,
-    hashedPassword VARCHAR(161) -- Salt=32, Hashed=128, ':'=1
-  );
+CREATE TABLE IF NOT EXISTS data_pipeline.user (
+  id UUID PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(100) NOT NULL,
+  hashedPassword VARCHAR(161) -- Salt=32, Hashed=128, ':'=1
+);
 
 -- All password are default: 'password'
 -- > let key1 = scryptSync('password', '9148cb88', 64)
