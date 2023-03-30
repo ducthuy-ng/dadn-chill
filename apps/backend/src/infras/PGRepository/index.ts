@@ -66,7 +66,7 @@ export class PGRepository implements SensorRepo, NotificationRepo, ReadEventRepo
           notificationDto.id,
           notificationDto.id_of_origin_sensor,
           notificationDto.name_of_origin_sensor,
-          notificationDto.read_ts,
+          new Date(notificationDto.read_ts),
           notificationDto.header,
           notificationDto.content
         )
