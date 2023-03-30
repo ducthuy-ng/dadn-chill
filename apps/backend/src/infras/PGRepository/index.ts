@@ -130,6 +130,14 @@ export class PGRepository implements SensorRepo, NotificationRepo, ReadEventRepo
     return this.convertDtoToSensor(result.rows[0]);
   }
 
+  async getAllSensorIds(): Promise<number[]> {
+    const result = await this.connectionPool.query<{ id: SensorId }>(
+      'SELECT id FROM data_pipeline.sensor;'
+    );
+
+    return result.rows.map((row) => row.id);
+  }
+
   async getByPage(pageNum: number): Promise<Sensor[]> {
     this.logger.debug(`Get sensor list of page: ${pageNum}`);
     const result = await this.connectionPool.query(

@@ -111,4 +111,9 @@ describe('PGSensorRepo test', () => {
     sensorList = await sensorRepo.getByPage(2);
     expect(sensorList).toHaveLength(0);
   });
+
+  test('Get all sensor IDs', async () => {
+    const sensorIds = await sensorRepo.getAllSensorIds();
+    expect(sensorIds.length).not.toEqual(0);
+  });
 });
