@@ -6,6 +6,7 @@ import { SensorReadEvent } from '../../core/domain/SensorReadEvent';
 import { ClientId, ClientManager } from '../../core/usecases/gateways/ClientManager';
 import { Logger } from '../../core/usecases/Logger';
 import { HttpClientManager } from '../ExpressServer/HttpClientManager';
+import { NotificationDto } from './NotificationDto';
 
 type ClientDetails = {
   connection?: Response;
@@ -127,9 +128,23 @@ export class SseClientManager implements HttpClientManager {
       if (!clientDetails.connection) return;
 
       for (const notification of notificationList) {
-        clientDetails.connection.write(this.serialize(notification));
+        const dto = this.encodeNotificationDto(notification);
+        clientDetails.connection.write(`event: notification\ndata: ${JSON.stringify(dto)}\n\n`);
       }
     });
+  }
+
+  private encodeNotificationDto(notification: Notification): NotificationDto {
+    return {
+      id: notification.id,
+      idOfOriginSensor: notification.idOfOriginSensor,
+      nameOfOriginSensor: notification.nameOfOriginSensor,
+
+      createTimestamp: notification.createdDate.toISOString(),
+
+      header: notification.header,
+      content: notification.content,
+    };
   }
 
   propagateSensorReadEvent(event: SensorReadEvent): void {
@@ -139,12 +154,7 @@ export class SseClientManager implements HttpClientManager {
       if (!clientDetails.connection || !clientDetails.subscribedSensorIds.includes(event.sensorId))
         return;
 
-      clientDetails.connection.write('event: sensorEvent\n');
-      clientDetails.connection.write(this.serialize(event));
+      clientDetails.connection.write(`event: sensorEvent\ndata: ${JSON.stringify(event)}\n\n`);
     });
-  }
-
-  private serialize(data: unknown) {
-    return `data: ${JSON.stringify(data)}\n\n`;
   }
 }
