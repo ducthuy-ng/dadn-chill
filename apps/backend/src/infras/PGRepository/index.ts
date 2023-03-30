@@ -6,6 +6,7 @@ import { Logger } from '../../core/usecases/Logger';
 import { NotificationRepo } from '../../core/usecases/repos/NotificationRepo';
 import { FailedToStoreEvent, ReadEventRepo } from '../../core/usecases/repos/ReadEventRepo';
 import { SensorRepo } from '../../core/usecases/repos/SensorRepo';
+import { RetrievedNotificationDto } from './NotificationPgDto';
 
 export class PGRepository implements SensorRepo, NotificationRepo, ReadEventRepo {
   private static pageSize = 10;
@@ -24,7 +25,6 @@ export class PGRepository implements SensorRepo, NotificationRepo, ReadEventRepo
     this.logger = logger;
   }
 
-  // TODO
   async add(...notifications: Notification[]): Promise<void> {
     this.logger.debug('save notification list', notifications);
 
@@ -44,6 +44,7 @@ export class PGRepository implements SensorRepo, NotificationRepo, ReadEventRepo
           ]
         );
       }
+
       await pgClient.query('COMMIT');
     } catch (e) {
       this.logger.error('failed to add to PG, rolling back');
@@ -53,8 +54,25 @@ export class PGRepository implements SensorRepo, NotificationRepo, ReadEventRepo
     }
   }
 
-  getLatestNotification(pageNum: number): Promise<Notification[]> {
-    throw new Error('Method not implemented.');
+  async getLatestNotification(pageNum: number): Promise<Notification[]> {
+    const getNotificationResponse = await this.connectionPool.query<RetrievedNotificationDto>(
+      'SELECT * FROM data_pipeline.notification ORDER BY read_ts DESC LIMIT $1 OFFSET $2',
+      [PGRepository.pageSize, (pageNum - 1) * PGRepository.pageSize]
+    );
+
+    const notifications: Notification[] = getNotificationResponse.rows.map(
+      (notificationDto) =>
+        new Notification(
+          notificationDto.id,
+          notificationDto.id_of_origin_sensor,
+          notificationDto.name_of_origin_sensor,
+          notificationDto.read_ts,
+          notificationDto.header,
+          notificationDto.content
+        )
+    );
+
+    return notifications;
   }
 
   async disconnect() {
