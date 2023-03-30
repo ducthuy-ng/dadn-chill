@@ -12,6 +12,9 @@ import { ClientSubscribeUseCase } from '../../core/usecases/StartClient';
 import { ErrorMsg } from './ErrorMsg';
 import { HttpClientManager } from './HttpClientManager';
 import { GenerateDto, SensorDto } from './SensorDto';
+import { SensorCommand } from '../../core/domain/SensorCommand';
+import { parseSensorCommand, validate } from './SensorCommandDto';
+import { SensorController } from '../../core/usecases/gateways/SensorController';
 
 export class ExpressServer {
   private app: Application;
@@ -23,6 +26,8 @@ export class ExpressServer {
   private clientSubscribeUC: ClientSubscribeUseCase;
   private changeSubscriptionUC: ChangeSubscriptionUseCase;
 
+  private sensorController: SensorController;
+
   private logger: Logger;
 
   constructor(
@@ -32,10 +37,12 @@ export class ExpressServer {
     clientSubscribeUC: ClientSubscribeUseCase,
     changeSubscriptionUC: ChangeSubscriptionUseCase,
     httpClientManager: HttpClientManager,
+    sensorController: SensorController,
     logger: Logger,
     frontendEndpoint = 'localhost:4200'
   ) {
     this.logger = logger;
+    this.sensorController = sensorController;
 
     this.app = express();
 
@@ -71,6 +78,7 @@ export class ExpressServer {
   private setupRestRouter() {
     const router = express.Router();
     router.get<null, SensorDto[] | ErrorMsg>('/sensors', this.handleGetSensorList);
+    router.post('/command', this.handleCommandRequest);
     // TODO: router.get<null, SensorDto[] | ErrorMsg>('/sensor/:id', this.handleGetSensorList);
 
     this.app.use('/', router);
@@ -153,14 +161,41 @@ export class ExpressServer {
     }
   };
 
-  startListening() {
-    this.server = this.app.listen(this.listeningPort);
+  private handleCommandRequest: RequestHandler<unknown, ErrorMsg> = async (req, res) => {
+    const validateResult = validate(req.body);
+
+    if (!validateResult.success) {
+      res.status(400).send({
+        name: validateResult.errName,
+        detail: validateResult.errMsg,
+      });
+      this.logger.debug('processed', req.url, req.body, validateResult.errMsg);
+      return;
+    }
+
+    const command = parseSensorCommand(req.body);
+
+    const result = await this.sensorController.forwardCommand(command);
+    if (!result.success) {
+      res.status(400).send({
+        name: 'FailedToForwardCommand',
+        detail: result.detail,
+      });
+      return;
+    }
+
+    res.sendStatus(200);
+    return;
+  };
+
+  startListening(callback?: () => void) {
+    this.server = this.app.listen(this.listeningPort, callback);
     this.logger.info(`Start listening at port: ${this.listeningPort}`);
   }
 
-  stopListening() {
+  stopListening(callback?: () => void) {
     this.logger.info(`Shutting down`);
-    this.server.close();
+    this.server.close(callback);
   }
 
   use(path: string, callback: RequestHandler) {

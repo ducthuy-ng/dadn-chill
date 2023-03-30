@@ -23,9 +23,14 @@ describe('Unit test for MQTT Sensor Controller', () => {
   };
 
   test('if SensorRepo have 1 sensor, then it should load correctly', async () => {
-    const mqttClient = mqtt.connect(mqttEndPoint);
+    const mqttClient = await mqtt.connectAsync(mqttEndPoint);
+    mqttClient.subscribe('controller/sensor-1');
+
+    let receivedMessage = false;
+
     mqttClient.on('message', (_topic, payload) => {
       expect(payload.toString()).toEqual(command1.details.toString());
+      receivedMessage = true;
     });
 
     const sensorRepo = new InMemSensorRepo();
@@ -45,6 +50,8 @@ describe('Unit test for MQTT Sensor Controller', () => {
     await sleep(1);
     await mqttClient.end();
     await controller.stopServer();
+
+    if (!receivedMessage) throw new Error();
   });
 
   test('if SensorRepo have unmatched sensor, then forward command should fail', async () => {
@@ -71,9 +78,13 @@ describe('Unit test for MQTT Sensor Controller', () => {
   });
 
   test('later sensor subscriber should still work', async () => {
+    let haveReceivedMsg = false;
+
     const mqttClient = mqtt.connect(mqttEndPoint);
+    mqttClient.subscribe('controller/sensor-1');
     mqttClient.on('message', (_topic, payload) => {
       expect(payload.toString()).toEqual(command1.details.toString());
+      haveReceivedMsg = true;
     });
 
     const controller = new MqttSensorController(
@@ -91,5 +102,7 @@ describe('Unit test for MQTT Sensor Controller', () => {
     await sleep(1);
     await mqttClient.end();
     await controller.stopServer();
+
+    if (!haveReceivedMsg) throw new Error();
   });
 });

@@ -58,6 +58,7 @@ export class MqttSensorController implements SensorController {
     try {
       await this.client.publish(receivedTopic, String(command.details));
 
+      this.logger.debug('send message to topic', receivedTopic);
       return { success: true, detail: 'send command successfully' };
     } catch (err) {
       this.logger.error('failed to send command, details:', receivedSensorId, err);

@@ -14,6 +14,7 @@ import { BSLogger } from './infras/BSLogger';
 import { EnvironmentVariablesProcessor } from './infras/EnvironmentVariable';
 import { ExpressServer } from './infras/ExpressServer';
 import { MqttEventMQ } from './infras/MqttEventMQ';
+import { MqttSensorController } from './infras/MqttSensorController';
 import { PGRepository } from './infras/PGRepository';
 import { SseClientManager } from './infras/SseClientManager';
 
@@ -28,6 +29,12 @@ const PGRepo = new PGRepository(
 const clientManager = new SseClientManager({
   logger: new BSLogger('SseClientManager', {}),
 });
+
+const sensorController = new MqttSensorController(
+  envVarProcessor.getMqttHostname(),
+  new BSLogger('MqttServerController', {})
+);
+sensorController.populateSensors(PGRepo);
 
 const getSingleSensorUC = new GetSingleSensorUseCase(PGRepo);
 const getSensorListUC = new GetSensorListUseCase(PGRepo);
@@ -45,7 +52,7 @@ const processReadEventUC = new ProcessReadEventUseCase(
 const eventMQ = new MqttEventMQ(
   envVarProcessor.getMqttHostname(),
   'chill-topic',
-  new BSLogger('MQTTServer', {})
+  new BSLogger('MqttEventMQ', {})
 );
 eventMQ.onNewEvent(processReadEventUC);
 
@@ -56,16 +63,19 @@ const server = new ExpressServer(
   clientSubscribeUC,
   changeSubscriptionUC,
   clientManager,
+  sensorController,
   new BSLogger('ExpressServer', {}),
   envVarProcessor.getFEEndpoint()
 );
 
-function startServers() {
+async function startServers() {
+  await sensorController.startServer();
   eventMQ.startListening();
   server.startListening();
 }
 
 async function closingServers() {
+  await sensorController.stopServer();
   await PGRepo.disconnect();
   server.stopListening();
   await eventMQ.stopListening();

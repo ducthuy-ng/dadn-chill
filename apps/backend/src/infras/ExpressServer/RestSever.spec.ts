@@ -6,7 +6,7 @@ import { ChangeSubscriptionUseCase } from '../../core/usecases/ChangeSubscriptio
 import { ClientSubscribeUseCase } from '../../core/usecases/StartClient';
 import { BSLogger } from '../BSLogger';
 import { InMemSensorRepo } from '../InMemSensorRepo';
-import { sleep } from '../testingTools';
+import { DummySensorController } from './../DummySensorController';
 import { RestClientManager } from './RestClientManager';
 
 describe('Test REST API server', () => {
@@ -23,6 +23,9 @@ describe('Test REST API server', () => {
   const clientSubscribeUC = new ClientSubscribeUseCase(restClientManager);
   const changeSubscriptionUC = new ChangeSubscriptionUseCase(restClientManager);
 
+  const sensorController = new DummySensorController();
+  sensorController.prepareConnectionForSensor(1);
+
   const listeningPort = 3333;
   const server = new ExpressServer(
     listeningPort,
@@ -31,17 +34,16 @@ describe('Test REST API server', () => {
     clientSubscribeUC,
     changeSubscriptionUC,
     restClientManager,
+    sensorController,
     testLogger
   );
 
-  beforeAll(async () => {
-    server.startListening();
-    await sleep(2);
+  beforeAll((done) => {
+    server.startListening(done);
   });
 
-  afterAll(async () => {
-    server.stopListening();
-    await sleep(2);
+  afterAll((done) => {
+    server.stopListening(done);
   });
 
   test('Test get sensors of page 1', async () => {
@@ -54,5 +56,43 @@ describe('Test REST API server', () => {
     const resp = await axios.get('http://localhost:3333/sensors');
     expect(resp.data).not.toBeNull();
     expect(resp.data).toHaveLength(1);
+  });
+
+  // ===================== /command =====================
+  test('Simple command send should work', async () => {
+    const resp = await axios.post('http://localhost:3333/command', {
+      sensorId: 1,
+      details: 1,
+    });
+
+    expect(resp.status).toEqual(200);
+  });
+
+  test('Send command to non-register sensor should fail', async () => {
+    const resp = await axios.post(
+      'http://localhost:3333/command',
+      {
+        sensorId: 2,
+        details: 1,
+      },
+      { validateStatus: () => true }
+    );
+
+    expect(resp.status).toEqual(400);
+    expect(resp.data.name).toEqual('FailedToForwardCommand');
+  });
+
+  test('Validation should occurred before forwarding', async () => {
+    const resp = await axios.post(
+      'http://localhost:3333/command',
+      {
+        sensorId: 2,
+        details: '1',
+      },
+      { validateStatus: () => true }
+    );
+
+    expect(resp.status).toEqual(400);
+    expect(resp.data.name).toEqual('InvalidPropertyType');
   });
 });

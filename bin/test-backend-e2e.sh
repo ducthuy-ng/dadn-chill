@@ -2,7 +2,7 @@
 
 set -eufx
 
-BACKEND_PID=1
+E2E_EXITCODE=1
 
 __cleanup() {
   docker compose -f ./docker-compose.dev.yaml down --volumes
