@@ -1,10 +1,12 @@
 import { ConnectionConfig, Pool } from 'pg';
-import { Notification, NotificationRepo } from '../../core/domain/Notification';
+import { Notification } from '../../core/domain/Notification';
 import { Sensor, SensorId } from '../../core/domain/Sensor';
 import { SensorReadEvent } from '../../core/domain/SensorReadEvent';
 import { Logger } from '../../core/usecases/Logger';
+import { NotificationRepo } from '../../core/usecases/repos/NotificationRepo';
 import { FailedToStoreEvent, ReadEventRepo } from '../../core/usecases/repos/ReadEventRepo';
 import { SensorRepo } from '../../core/usecases/repos/SensorRepo';
+import { RetrievedNotificationDto } from './NotificationPgDto';
 
 export class PGRepository implements SensorRepo, NotificationRepo, ReadEventRepo {
   private static pageSize = 10;
@@ -23,14 +25,54 @@ export class PGRepository implements SensorRepo, NotificationRepo, ReadEventRepo
     this.logger = logger;
   }
 
-  // TODO
-  add(...notifications: Notification[]): void {
-    return;
+  async add(...notifications: Notification[]): Promise<void> {
+    this.logger.debug('save notification list', notifications);
+
+    const pgClient = await this.connectionPool.connect();
+    try {
+      await pgClient.query('BEGIN');
+      for (const notification of notifications) {
+        await pgClient.query(
+          'INSERT INTO data_pipeline.notification VALUES ($1, $2, $3, $4, $5, $6)',
+          [
+            notification.id,
+            notification.idOfOriginSensor,
+            notification.nameOfOriginSensor,
+            notification.getCreatedTimestamp(),
+            notification.header,
+            notification.content,
+          ]
+        );
+      }
+
+      await pgClient.query('COMMIT');
+    } catch (e) {
+      this.logger.error('failed to add to PG, rolling back');
+      await pgClient.query('ROLLBACK');
+    } finally {
+      pgClient.release();
+    }
   }
 
-  // TODO
-  getLastestNotification(pageNum: number): Notification[] {
-    return [];
+  async getLatestNotification(pageNum: number): Promise<Notification[]> {
+    const getNotificationResponse = await this.connectionPool.query<RetrievedNotificationDto>(
+      'SELECT * FROM data_pipeline.notification ORDER BY read_ts DESC LIMIT $1 OFFSET $2',
+      [PGRepository.pageSize, (pageNum - 1) * PGRepository.pageSize]
+    );
+
+    const notifications: Notification[] = getNotificationResponse.rows.map(
+      (notificationDto) =>
+        new Notification(
+          notificationDto.id,
+          notificationDto.id_of_origin_sensor,
+          notificationDto.name_of_origin_sensor,
+          notificationDto.read_ts,
+          notificationDto.header,
+          notificationDto.content
+        )
+    );
+
+    return notifications;
   }
 
   async disconnect() {
@@ -38,7 +80,7 @@ export class PGRepository implements SensorRepo, NotificationRepo, ReadEventRepo
   }
 
   async saveSensor(sensor: Sensor) {
-    this.logger.debug(`Save sensor id: ${sensor.getId()}`);
+    this.logger.debug('Save sensor id', sensor.getId());
     await this.connectionPool.query(
       'INSERT INTO data_pipeline.sensor VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) \
       ON CONFLICT (id) DO UPDATE SET \

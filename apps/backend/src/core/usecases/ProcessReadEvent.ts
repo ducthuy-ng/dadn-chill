@@ -1,12 +1,12 @@
 import { LimitCheckMiddleware } from '../domain/LimitChecker';
-import { NotificationRepo } from '../domain/Notification';
 import { SensorReadEvent } from '../domain/SensorReadEvent';
 import { ClientManager } from './gateways/ClientManager';
+import { NotificationRepo } from './repos/NotificationRepo';
 import { ReadEventRepo } from './repos/ReadEventRepo';
 import { SensorRepo } from './repos/SensorRepo';
 
 export interface IProcessReadEventUC {
-  execute(event: SensorReadEvent);
+  execute(event: SensorReadEvent): void;
 }
 
 export class ProcessReadEventUseCase implements IProcessReadEventUC {

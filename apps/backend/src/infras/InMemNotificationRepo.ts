@@ -1,16 +1,16 @@
-import { NotificationRepo } from '../core/domain/Notification';
 import { PageOutOfRange } from '../core/usecases/repos/SensorRepo';
 import { Notification } from '../core/domain/Notification';
+import { NotificationRepo } from '../core/usecases/repos/NotificationRepo';
 
 export class InMemNotificationRepo implements NotificationRepo {
   private notificationList: Notification[] = [];
   private pageSize = 10;
 
-  add(...notifications: Notification[]): void {
+  async add(...notifications: Notification[]): Promise<void> {
     this.notificationList.concat(notifications);
   }
 
-  getLastestNotification(pageNum: number): Notification[] {
+  async getLatestNotification(pageNum: number): Promise<Notification[]> {
     if (pageNum * this.pageSize > this.notificationList.length) {
       throw new PageOutOfRange(pageNum);
     }
