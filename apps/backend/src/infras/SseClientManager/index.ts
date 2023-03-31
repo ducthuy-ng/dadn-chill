@@ -3,7 +3,7 @@ import { Response, Router } from 'express';
 import { Notification } from '../../core/domain/Notification';
 import { SensorId } from '../../core/domain/Sensor';
 import { SensorReadEvent } from '../../core/domain/SensorReadEvent';
-import { ClientId, ClientManager } from '../../core/usecases/gateways/ClientManager';
+import { ClientId } from '../../core/usecases/gateways/ClientManager';
 import { Logger } from '../../core/usecases/Logger';
 import { HttpClientManager } from '../ExpressServer/HttpClientManager';
 import { NotificationDto } from './NotificationDto';
