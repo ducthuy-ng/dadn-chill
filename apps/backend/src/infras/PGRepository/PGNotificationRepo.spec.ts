@@ -94,17 +94,19 @@ describe('Unit tests of PG Notification Repo', () => {
     await pgPool.query('TRUNCATE data_pipeline.notification;');
   });
 
-  test('Get page of nothing should return nothing', async () => {
-    const result = await notificationRepo.getLatestNotification(1);
+  test('Get offset of over limit should return nothing', async () => {
+    const result = await notificationRepo.getLatestNotification(10, 10);
     expect(result.length).toEqual(0);
   });
 
   test('Insert then retrieve should get all, if not pass pageSize', async () => {
     await notificationRepo.add(notification1, notification2);
 
-    const result = await notificationRepo.getLatestNotification(1);
+    const result = await notificationRepo.getLatestNotification(0, 20);
     expect(result.length).toEqual(2);
     expect(result).toContainEqual(notification1);
     expect(result).toContainEqual(notification2);
+
+    await pgPool.query('TRUNCATE data_pipeline.notification;');
   });
 });

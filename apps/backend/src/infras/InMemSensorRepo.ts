@@ -1,9 +1,8 @@
-import { SensorId, Sensor } from '../core/domain/Sensor';
-import { PageOutOfRange, SensorIdNotFound, SensorRepo } from '../core/usecases/repos/SensorRepo';
+import { Sensor, SensorId } from '../core/domain/Sensor';
+import { SensorIdNotFound, SensorRepo } from '../core/usecases/repos/SensorRepo';
 
 export class InMemSensorRepo implements SensorRepo {
   private sensorMap = new Map<SensorId, Sensor>();
-  private pageSize = 10;
 
   async saveSensor(sensor: Sensor): Promise<void> {
     this.sensorMap.set(sensor.getId(), sensor);
@@ -20,18 +19,13 @@ export class InMemSensorRepo implements SensorRepo {
     return Array.from(this.sensorMap.keys());
   }
 
-  async getByPage(pageNum: number): Promise<Sensor[]> {
-    if ((pageNum - 1) * this.pageSize > this.sensorMap.size) {
-      throw new PageOutOfRange(pageNum);
-    }
-
+  async getAllSensors(offset: number, limit: number): Promise<Sensor[]> {
     const sensorArray = Array.from(this.sensorMap.values());
-    const sensorSliceToPageSize = sensorArray.slice(
-      (pageNum - 1) * this.pageSize,
-      pageNum * this.pageSize
-    );
+    return sensorArray.slice(offset, offset + limit);
+  }
 
-    return sensorSliceToPageSize;
+  async getNumOfSensors(): Promise<number> {
+    return this.sensorMap.size;
   }
 
   async getNextId(): Promise<number> {
@@ -40,5 +34,9 @@ export class InMemSensorRepo implements SensorRepo {
 
   async deleteById(id: number): Promise<void> {
     this.sensorMap.delete(id);
+  }
+
+  clean() {
+    this.sensorMap.clear()
   }
 }

@@ -87,6 +87,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.1",
+    "express-validator": "^6.15.0",
     "jotai": "^2.0.3",
     "kafkajs": "^2.2.4",
     "leaflet": "^1.9.3",

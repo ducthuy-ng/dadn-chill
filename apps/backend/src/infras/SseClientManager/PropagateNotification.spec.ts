@@ -94,8 +94,6 @@ describe('Unit test for SSE Client Manager - PropagateNotification', () => {
       `http://localhost:${serverAddress.port}/streaming/${clientId1}`
     );
     eventSource1.addEventListener('notification', (notification) => {
-      console.log(notification);
-
       const sensorEvent = JSON.parse(notification.data);
       es1Events.push(sensorEvent);
     });
@@ -107,8 +105,6 @@ describe('Unit test for SSE Client Manager - PropagateNotification', () => {
       `http://localhost:${serverAddress.port}/streaming/${clientId2}`
     );
     eventSource2.addEventListener('notification', (notification) => {
-      console.log(notification);
-
       const sensorEvent = JSON.parse(notification.data);
       es2Events.push(sensorEvent);
     });
@@ -139,15 +135,12 @@ describe('Unit test for SSE Client Manager - PropagateNotification', () => {
 
     const es1Events = [];
     eventSource1.addEventListener('sensorEvent', (event) => {
-      console.log(event);
-
       const sensorEvent = JSON.parse(event.data);
       es1Events.push(sensorEvent);
     });
 
     const es1Notifications = [];
     eventSource1.addEventListener('notification', (notification) => {
-      console.log(notification);
       const parseNotification = JSON.parse(notification.data);
       es1Notifications.push(parseNotification);
     });
