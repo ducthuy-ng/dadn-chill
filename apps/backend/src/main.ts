@@ -18,6 +18,8 @@ import { MqttEventMQ } from './infras/MqttEventMQ';
 import { MqttSensorController } from './infras/MqttSensorController';
 import { PGRepository } from './infras/PGRepository';
 import { SseClientManager } from './infras/SseClientManager';
+import express from 'express';
+import path from 'path';
 
 const envVarProcessor = new EnvironmentVariablesProcessor(process.env);
 
@@ -70,6 +72,8 @@ const server = new ExpressServer(
   new BSLogger('ExpressServer', {}),
   envVarProcessor.getFEEndpoint()
 );
+
+server.use('/doc', express.static(path.join(__dirname, 'assets')));
 
 async function startServers() {
   await sensorController.startServer();

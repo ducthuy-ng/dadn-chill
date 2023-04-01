@@ -56,6 +56,7 @@ export class ExpressServer {
     this.setupCORS(frontendEndpoint);
     this.setupRestRouter();
     this.setupClientManagerRouter(httpClientManager);
+    this.setupPublic();
 
     this.listeningPort = listeningPort;
 
@@ -64,6 +65,10 @@ export class ExpressServer {
     this.getAllNotificationsUC = getAllNotificationsUC;
     this.clientSubscribeUC = clientSubscribeUC;
     this.changeSubscriptionUC = changeSubscriptionUC;
+  }
+
+  private setupPublic() {
+    this.app.set('view engine', 'html');
   }
 
   private setupBodyParser() {
