@@ -8,11 +8,15 @@ export interface SensorRepo {
    * @throws {SensorIdNotFound}
    */
   getById(id: SensorId): Promise<Sensor | null>;
+
+  getAllSensorIds(): Promise<SensorId[]>;
+
   /**
    *
    * @throws {PageOutOfRange}
    */
-  getByPage(pageNum: number): Promise<Sensor[]>;
+  getAllSensors(offset: number, limit: number): Promise<Sensor[]>;
+  getNumOfSensors(): Promise<number>;
 
   getNextId(): Promise<SensorId>;
 
@@ -25,14 +29,5 @@ export class SensorIdNotFound implements Error {
 
   constructor(id: SensorId) {
     this.message = `Sensor ID not found: ${id}`;
-  }
-}
-
-export class PageOutOfRange implements Error {
-  name: 'PageOutOfRange';
-  message: string;
-
-  constructor(pageNum: number) {
-    this.message = `Page number out of range: ${pageNum}`;
   }
 }

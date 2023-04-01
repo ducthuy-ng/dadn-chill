@@ -21,5 +21,6 @@
       "port": 1883,
       "clientId": "vsmqtt_client"
     }
-  ]
+  ],
+  "Prettier-SQL.SQLFlavourOverride": "postgresql"
 }

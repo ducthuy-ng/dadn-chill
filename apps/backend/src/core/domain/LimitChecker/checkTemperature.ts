@@ -14,7 +14,7 @@ class CheckTemperatureMiddleware extends LimitCheckMiddleware {
     const returnNotifications = [];
     if (event.sensorValue.temperature >= this.temperatureThreshold) {
       returnNotifications.push(
-        new Notification(
+        Notification.generate(
           processingSensor,
           'Alert: too hot',
           'The temperature has passed the threshold'

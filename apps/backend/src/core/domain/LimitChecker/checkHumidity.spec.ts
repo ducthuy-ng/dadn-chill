@@ -22,7 +22,7 @@ describe('Test checkHumidity domain logic', () => {
     expect(receivedNotifications).toHaveLength(1);
 
     const notification = receivedNotifications[0];
-    expect(notification.getSensorName()).toEqual(testSensor.getName());
+    expect(notification.nameOfOriginSensor).toEqual(testSensor.getName());
   });
 
   it('above threshold should not return notification', () => {
