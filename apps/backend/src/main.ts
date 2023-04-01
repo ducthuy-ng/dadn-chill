@@ -3,11 +3,12 @@ dotenv.config();
 
 import { SkipCheck } from './core/domain/LimitChecker/SkipCheck';
 import {
-  GetSensorListUseCase,
+  GetAllSensorUseCase,
   GetSingleSensorUseCase,
   ProcessReadEventUseCase,
 } from './core/usecases';
 import { ChangeSubscriptionUseCase } from './core/usecases/ChangeSubscription';
+import { GetAllNotificationsUseCase } from './core/usecases/GetAllNotifications';
 import { LogLevel } from './core/usecases/Logger';
 import { ClientSubscribeUseCase } from './core/usecases/StartClient';
 import { BSLogger } from './infras/BSLogger';
@@ -37,7 +38,8 @@ const sensorController = new MqttSensorController(
 sensorController.populateSensors(PGRepo);
 
 const getSingleSensorUC = new GetSingleSensorUseCase(PGRepo);
-const getSensorListUC = new GetSensorListUseCase(PGRepo);
+const getAllSensorUsecase = new GetAllSensorUseCase(PGRepo);
+const getAllNotificationsUC = new GetAllNotificationsUseCase(PGRepo);
 const clientSubscribeUC = new ClientSubscribeUseCase(clientManager);
 const changeSubscriptionUC = new ChangeSubscriptionUseCase(clientManager);
 
@@ -59,7 +61,8 @@ eventMQ.onNewEvent(processReadEventUC);
 const server = new ExpressServer(
   envVarProcessor.getExpressListeningPort(),
   getSingleSensorUC,
-  getSensorListUC,
+  getAllNotificationsUC,
+  getAllSensorUsecase,
   clientSubscribeUC,
   changeSubscriptionUC,
   clientManager,

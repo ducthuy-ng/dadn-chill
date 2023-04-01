@@ -1,20 +1,24 @@
-import express, { Application, RequestHandler } from 'express';
+import express, { Application, RequestHandler, Router } from 'express';
+import { query, validationResult } from 'express-validator';
 import { Server } from 'http';
-import { GetSensorListUseCase, GetSingleSensorUseCase } from '../../core/usecases';
+import { GetAllSensorUseCase, GetSingleSensorUseCase } from '../../core/usecases';
 import { Logger } from '../../core/usecases/Logger';
-import { PageOutOfRange } from '../../core/usecases/repos/SensorRepo';
 
 import * as bodyParser from 'body-parser';
 import cors from 'cors';
 import { ChangeSubscriptionUseCase } from '../../core/usecases/ChangeSubscription';
 import { ClientIdNotFound } from '../../core/usecases/gateways/ClientManager';
+import { SensorController } from '../../core/usecases/gateways/SensorController';
+import { GetAllNotificationsUseCase } from '../../core/usecases/GetAllNotifications';
 import { ClientSubscribeUseCase } from '../../core/usecases/StartClient';
 import { ErrorMsg } from './ErrorMsg';
 import { HttpClientManager } from './HttpClientManager';
-import { GenerateDto, SensorDto } from './SensorDto';
-import { SensorCommand } from '../../core/domain/SensorCommand';
+import { convertToNotificationDto, NotificationDto } from './NotificationDto';
 import { parseSensorCommand, validate } from './SensorCommandDto';
-import { SensorController } from '../../core/usecases/gateways/SensorController';
+import { GenerateDto, SensorDto } from './SensorDto';
+
+const DEFAULT_OFFSET = 0;
+const DEFAULT_LIMIT = 10;
 
 export class ExpressServer {
   private app: Application;
@@ -22,7 +26,8 @@ export class ExpressServer {
   private listeningPort: number;
 
   private getSingleSensorUC: GetSingleSensorUseCase;
-  private getSensorListUC: GetSensorListUseCase;
+  private getSensorListUC: GetAllSensorUseCase;
+  private getAllNotificationsUC: GetAllNotificationsUseCase;
   private clientSubscribeUC: ClientSubscribeUseCase;
   private changeSubscriptionUC: ChangeSubscriptionUseCase;
 
@@ -33,7 +38,8 @@ export class ExpressServer {
   constructor(
     listeningPort = 3333,
     getSingleSensorUC: GetSingleSensorUseCase,
-    getSensorListUC: GetSensorListUseCase,
+    getAllNotificationsUC: GetAllNotificationsUseCase,
+    getSensorListUC: GetAllSensorUseCase,
     clientSubscribeUC: ClientSubscribeUseCase,
     changeSubscriptionUC: ChangeSubscriptionUseCase,
     httpClientManager: HttpClientManager,
@@ -55,6 +61,7 @@ export class ExpressServer {
 
     this.getSingleSensorUC = getSingleSensorUC;
     this.getSensorListUC = getSensorListUC;
+    this.getAllNotificationsUC = getAllNotificationsUC;
     this.clientSubscribeUC = clientSubscribeUC;
     this.changeSubscriptionUC = changeSubscriptionUC;
   }
@@ -77,7 +84,9 @@ export class ExpressServer {
 
   private setupRestRouter() {
     const router = express.Router();
-    router.get<null, SensorDto[] | ErrorMsg>('/sensors', this.handleGetSensorList);
+    router.use('/sensors', this.getSensorRouter());
+    router.use('/notifications', this.getNotificationRouter());
+
     router.post('/command', this.handleCommandRequest);
     // TODO: router.get<null, SensorDto[] | ErrorMsg>('/sensor/:id', this.handleGetSensorList);
 
@@ -134,30 +143,94 @@ export class ExpressServer {
     return Array.isArray(object) && object.every((element) => typeof element === 'number');
   }
 
-  private handleGetSensorList: RequestHandler<null, SensorDto[] | ErrorMsg> = async (req, res) => {
-    let pageNum = parseInt(String(req.query.pageNum));
+  private getSensorRouter(): Router {
+    const router = express.Router();
 
-    if (isNaN(pageNum)) pageNum = 1;
-    this.logger.info('/sensors', pageNum);
+    router.get(
+      '/',
+      query('offset').optional().isInt().withMessage('Invalid query: offset'),
+      query('limit').optional().isInt().withMessage('Invalid query: limit'),
+      this.handleGetAllSensors
+    );
 
-    if (pageNum <= 0) {
+    return router;
+  }
+
+  private handleGetAllSensors: RequestHandler<null, SensorDto[] | ErrorMsg> = async (req, res) => {
+    this.logger.info('/sensors', req.url);
+
+    const validationErrors = validationResult(req);
+    if (!validationErrors.isEmpty()) {
+      const firstError = validationErrors.array()[0];
       res.status(400).json({
-        name: 'InvalidPageNum',
-        detail: 'pageNum should be greater than zero',
+        name: 'ValidationError',
+        detail: firstError.msg,
       });
+
       return;
     }
 
+    const offset = parseInt(String(req.query.offset)) || DEFAULT_OFFSET;
+    const limit = parseInt(String(req.query.limit)) || DEFAULT_LIMIT;
+
     try {
-      const sensors = await this.getSensorListUC.execute(pageNum);
+      const [sensors, numOfSensor] = await this.getSensorListUC.execute(offset, limit);
+
       const sensorDtoList = sensors.map((sensor) => GenerateDto(sensor));
-      res.json(sensorDtoList);
+      res.set('X-Content-Size', numOfSensor.toString()).json(sensorDtoList);
     } catch (err) {
-      if (err instanceof PageOutOfRange)
-        res.status(400).json({
-          name: 'InvalidPageNum',
-          detail: 'pageNum out of range',
-        });
+      res.status(400).json({
+        name: err.name || 'UnknownError',
+        detail: err.detail || 'Please check the log',
+      });
+    }
+  };
+
+  private getNotificationRouter(): Router {
+    const router = express.Router();
+    router.get(
+      '/',
+      query('offset').optional().isInt().withMessage('Invalid query: offset'),
+      query('limit').optional().isInt().withMessage('Invalid query: offset'),
+      this.getNotificationList
+    );
+
+    return router;
+  }
+
+  private getNotificationList: RequestHandler<NotificationDto[] | ErrorMsg> = async (req, res) => {
+    this.logger.debug('/notifications', req.url);
+
+    const validationErrors = validationResult(req);
+    if (!validationErrors.isEmpty()) {
+      const firstError = validationErrors.array()[0];
+      res.status(400).json({
+        name: 'ValidationError',
+        detail: firstError.msg,
+      });
+
+      return;
+    }
+
+    const offset = parseInt(String(req.query.offset)) || DEFAULT_OFFSET;
+    const limit = parseInt(String(req.query.limit)) || DEFAULT_LIMIT;
+
+    try {
+      const [notifications, notificationNum] = await this.getAllNotificationsUC.execute(
+        offset,
+        limit
+      );
+
+      const notificationDtoList = notifications.map(convertToNotificationDto);
+
+      res.status(200).set('X-Content-Size', notificationNum.toString()).send(notificationDtoList);
+    } catch (err) {
+      this.logger.error('an error occurred while fetching /notifications', err);
+
+      res.status(400).send({
+        name: err.name || 'UnknownError',
+        detail: err.message || 'Please check the log for details',
+      });
     }
   };
 

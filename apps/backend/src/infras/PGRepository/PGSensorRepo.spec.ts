@@ -104,12 +104,16 @@ describe('PGSensorRepo test', () => {
     retrievedSensor = await sensorRepo.getById(7);
   });
 
-  test('Get by page', async () => {
-    let sensorList = await sensorRepo.getByPage(1);
+  test('Get all sensors', async () => {
+    const sensorList = await sensorRepo.getAllSensors(0, 6);
     expect(sensorList).toHaveLength(6);
+  });
 
-    sensorList = await sensorRepo.getByPage(2);
-    expect(sensorList).toHaveLength(0);
+  test('Get all with offset 2, limit 2 should be different from offset 0, limit 2', async () => {
+    const sensorList1 = await sensorRepo.getAllSensors(0, 2);
+    const sensorList2 = await sensorRepo.getAllSensors(2, 2);
+
+    sensorList1.forEach((sensor1) => expect(sensorList2).not.toContainEqual(sensor1));
   });
 
   test('Get all sensor IDs', async () => {
