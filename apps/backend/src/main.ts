@@ -75,7 +75,6 @@ const server = new ExpressServer(
 
 server.use('/doc', express.static(path.join(__dirname, 'assets')));
 
-
 async function startServers() {
   await sensorController.startServer();
   eventMQ.startListening();

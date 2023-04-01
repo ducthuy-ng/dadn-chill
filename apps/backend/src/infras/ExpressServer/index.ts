@@ -58,7 +58,6 @@ export class ExpressServer {
     this.setupClientManagerRouter(httpClientManager);
     this.setupPublic();
 
-
     this.listeningPort = listeningPort;
 
     this.getSingleSensorUC = getSingleSensorUC;
