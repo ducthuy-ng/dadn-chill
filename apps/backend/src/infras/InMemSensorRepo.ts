@@ -37,6 +37,6 @@ export class InMemSensorRepo implements SensorRepo {
   }
 
   clean() {
-    this.sensorMap.clear()
+    this.sensorMap.clear();
   }
 }
