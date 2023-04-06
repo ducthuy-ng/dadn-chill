@@ -1,30 +1,31 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 
+import express from 'express';
+import path from 'path';
 import { SkipCheck } from './core/domain/LimitChecker/SkipCheck';
 import {
   GetAllSensorUseCase,
   GetSingleSensorUseCase,
-  ProcessReadEventUseCase,
+  ProcessReadEventUseCase
 } from './core/usecases';
 import { ChangeSubscriptionUseCase } from './core/usecases/ChangeSubscription';
 import { GetAllNotificationsUseCase } from './core/usecases/GetAllNotifications';
 import { LogLevel } from './core/usecases/Logger';
 import { ClientSubscribeUseCase } from './core/usecases/StartClient';
 import { BSLogger } from './infras/BSLogger';
-import { EnvironmentVariablesProcessor } from './infras/EnvironmentVariable';
+import { EnvironmentVariablesProcessor } from './infras/ConfigManager/EnvironmentVariable';
+import { DomainRegistry } from './infras/DomainRegistry';
 import { ExpressServer } from './infras/ExpressServer';
 import { MqttEventMQ } from './infras/MqttEventMQ';
 import { MqttSensorController } from './infras/MqttSensorController';
 import { PGRepository } from './infras/PGRepository';
 import { SseClientManager } from './infras/SseClientManager';
-import express from 'express';
-import path from 'path';
 
-const envVarProcessor = new EnvironmentVariablesProcessor(process.env);
+DomainRegistry.Instance.configManager = new EnvironmentVariablesProcessor(process.env);
 
 const PGRepo = new PGRepository(
-  envVarProcessor.getPGConnectionConfigs(),
+  DomainRegistry.Instance.configManager.getPGConnectionConfigs(),
   new BSLogger('PGRepo', { level: LogLevel.DEBUG })
 );
 
@@ -34,16 +35,18 @@ const clientManager = new SseClientManager({
 });
 
 const sensorController = new MqttSensorController(
-  envVarProcessor.getMqttHostname(),
+  DomainRegistry.Instance.configManager.getMqttHostname(),
   new BSLogger('MqttServerController', {})
 );
 sensorController.populateSensors(PGRepo);
 
-const getSingleSensorUC = new GetSingleSensorUseCase(PGRepo);
-const getAllSensorUsecase = new GetAllSensorUseCase(PGRepo);
-const getAllNotificationsUC = new GetAllNotificationsUseCase(PGRepo);
-const clientSubscribeUC = new ClientSubscribeUseCase(clientManager);
-const changeSubscriptionUC = new ChangeSubscriptionUseCase(clientManager);
+DomainRegistry.Instance.getSingleSensorUC = new GetSingleSensorUseCase(PGRepo);
+DomainRegistry.Instance.getAllSensorsUC = new GetAllSensorUseCase(PGRepo);
+DomainRegistry.Instance.getAllNotificationsUC = new GetAllNotificationsUseCase(PGRepo);
+DomainRegistry.Instance.subscribeClientUC = new ClientSubscribeUseCase(clientManager);
+DomainRegistry.Instance.changeClientSubscriptionUC = new ChangeSubscriptionUseCase(clientManager);
+
+DomainRegistry.Instance.sensorController = sensorController;
 
 const processReadEventUC = new ProcessReadEventUseCase(
   PGRepo,
@@ -54,24 +57,13 @@ const processReadEventUC = new ProcessReadEventUseCase(
 );
 
 const eventMQ = new MqttEventMQ(
-  envVarProcessor.getMqttHostname(),
+  DomainRegistry.Instance.configManager.getMqttHostname(),
   'chill-topic',
   new BSLogger('MqttEventMQ', {})
 );
 eventMQ.onNewEvent(processReadEventUC);
 
-const server = new ExpressServer(
-  envVarProcessor.getExpressListeningPort(),
-  getSingleSensorUC,
-  getAllNotificationsUC,
-  getAllSensorUsecase,
-  clientSubscribeUC,
-  changeSubscriptionUC,
-  clientManager,
-  sensorController,
-  new BSLogger('ExpressServer', {}),
-  envVarProcessor.getFEEndpoint()
-);
+const server = new ExpressServer(clientManager, new BSLogger('ExpressServer', {}));
 
 server.use('/doc', express.static(path.join(__dirname, 'assets')));
 

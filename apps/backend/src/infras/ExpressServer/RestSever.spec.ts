@@ -8,6 +8,8 @@ import { GetAllNotificationsUseCase } from '../../core/usecases/GetAllNotificati
 import { LogLevel } from '../../core/usecases/Logger';
 import { ClientSubscribeUseCase } from '../../core/usecases/StartClient';
 import { BSLogger } from '../BSLogger';
+import { InMemConfigManager } from '../ConfigManager/InMemConfigManager';
+import { DomainRegistry } from '../DomainRegistry';
 import { InMemNotificationRepo } from '../InMemNotificationRepo';
 import { InMemSensorRepo } from '../InMemSensorRepo';
 import { DummySensorController } from './../DummySensorController';
@@ -39,31 +41,27 @@ notificationRepo.add(notification2);
 
 // ======================== Create use cases and infrastructures ========================
 
-const getSingleSensorUC = new GetSingleSensorUseCase(sensorRepo);
-const getAllSensorUC = new GetAllSensorUseCase(sensorRepo);
-const getAllNotificationsUC = new GetAllNotificationsUseCase(notificationRepo);
+DomainRegistry.Instance.getSingleSensorUC = new GetSingleSensorUseCase(sensorRepo);
+DomainRegistry.Instance.getAllSensorsUC = new GetAllSensorUseCase(sensorRepo);
+DomainRegistry.Instance.getAllNotificationsUC = new GetAllNotificationsUseCase(notificationRepo);
 
 const testLogger = new BSLogger('test sensor', { level: LogLevel.DEBUG });
 
 const restClientManager = new RestClientManager(testLogger);
-const clientSubscribeUC = new ClientSubscribeUseCase(restClientManager);
-const changeSubscriptionUC = new ChangeSubscriptionUseCase(restClientManager);
+DomainRegistry.Instance.subscribeClientUC = new ClientSubscribeUseCase(restClientManager);
+DomainRegistry.Instance.changeClientSubscriptionUC = new ChangeSubscriptionUseCase(
+  restClientManager
+);
+
+const configs = new InMemConfigManager();
+configs.ExpressListeningPort = 3333;
+DomainRegistry.Instance.configManager = configs;
 
 const sensorController = new DummySensorController();
 sensorController.prepareConnectionForSensor(1);
+DomainRegistry.Instance.sensorController = sensorController;
 
-const listeningPort = 3333;
-const server = new ExpressServer(
-  listeningPort,
-  getSingleSensorUC,
-  getAllNotificationsUC,
-  getAllSensorUC,
-  clientSubscribeUC,
-  changeSubscriptionUC,
-  restClientManager,
-  sensorController,
-  testLogger
-);
+const server = new ExpressServer(restClientManager, testLogger);
 
 beforeAll((done) => {
   server.startListening(done);
@@ -71,6 +69,13 @@ beforeAll((done) => {
 
 afterAll((done) => {
   server.stopListening(done);
+});
+
+describe('Test /health-check routes', () => {
+  test('Simple get should return 200', async () => {
+    const response = await axios.get('http://localhost:3333/health-check');
+    expect(response.status).toEqual(200);
+  });
 });
 
 describe('Test /sensors routes', () => {
@@ -142,7 +147,7 @@ describe('Test /command route', () => {
     );
 
     expect(resp.status).toEqual(400);
-    expect(resp.data.name).toEqual('FailedToForwardCommand');
+    expect(resp.data.name).toEqual('RequestSensorIdNotConnect');
   });
 
   test('Validation should occurred before forwarding', async () => {
@@ -200,15 +205,15 @@ describe('Test /notification routes', () => {
   });
 
   test('Invalid query should throw error', async () => {
-    try {
-      await axios.get<NotificationDto[]>('http://localhost:3333/notifications?limit=a');
-      throw new Error();
-    } catch (err) {
-      if (!(err instanceof AxiosError)) throw new Error();
+    const response = await axios.get<NotificationDto[]>(
+      'http://localhost:3333/notifications?limit=a',
+      {
+        validateStatus: () => true,
+      }
+    );
 
-      expect(err.response.status).toEqual(400);
-      expect(err.response.data).toHaveProperty('name');
-      expect(err.response.data['name']).toEqual('ValidationError');
-    }
+    expect(response.status).toEqual(400);
+    expect(response.data).toHaveProperty('name');
+    expect(response.data['name']).toEqual('ValidationError');
   });
 });

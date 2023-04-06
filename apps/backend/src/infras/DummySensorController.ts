@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { SensorId } from '../core/domain/Sensor';
 import { SensorCommand } from '../core/domain/SensorCommand';
-import { OperationResult, SensorController } from '../core/usecases/gateways/SensorController';
+import { SensorController, SensorIdNotConnect } from '../core/usecases/gateways/SensorController';
 import { SensorRepo } from '../core/usecases/repos/SensorRepo';
 
 export class DummySensorController implements SensorController {
@@ -23,11 +23,9 @@ export class DummySensorController implements SensorController {
     this.registeredSensor.push(id);
   }
 
-  async forwardCommand(command: SensorCommand): Promise<OperationResult> {
-    if (this.registeredSensor.includes(command.sensorId)) {
-      return { success: true, detail: `command sent: ${command.sensorId} - ${command.details}` };
+  async forwardCommand(command: SensorCommand): Promise<void> {
+    if (!this.registeredSensor.includes(command.sensorId)) {
+      throw new SensorIdNotConnect(command.sensorId);
     }
-
-    return { success: false, detail: `command sent: ${command.sensorId} - ${command.details}` };
   }
 }

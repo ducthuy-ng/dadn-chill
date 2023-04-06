@@ -1,7 +1,11 @@
 import * as mqtt from 'async-mqtt';
 import { SensorId } from '../../core/domain/Sensor';
 import { SensorCommand } from '../../core/domain/SensorCommand';
-import { OperationResult, SensorController } from '../../core/usecases/gateways/SensorController';
+import {
+  SensorController,
+  SensorIdNotConnect,
+  TransmissionError
+} from '../../core/usecases/gateways/SensorController';
 import { Logger } from '../../core/usecases/Logger';
 import { SensorRepo } from '../../core/usecases/repos/SensorRepo';
 
@@ -46,25 +50,22 @@ export class MqttSensorController implements SensorController {
     this.sensorTopicMap.set(id, `${this.mqttTopicPrefix}-${id}`);
   }
 
-  async forwardCommand(command: SensorCommand): Promise<OperationResult> {
+  async forwardCommand(command: SensorCommand): Promise<void> {
     this.logger.debug('sending command to sensor', command.sensorId);
 
     const receivedSensorId = command.sensorId;
     const receivedTopic = this.sensorTopicMap.get(receivedSensorId);
 
-    if (receivedTopic === undefined)
-      return { success: false, detail: `Sensor with ID ${receivedSensorId} not registered` };
+    if (receivedTopic === undefined) throw new SensorIdNotConnect(receivedSensorId);
 
     try {
       await this.client.publish(receivedTopic, String(command.details));
-
-      this.logger.debug('send message to topic', receivedTopic);
-      return { success: true, detail: 'send command successfully' };
+      this.logger.info('send message to topic', receivedTopic);
     } catch (err) {
       this.logger.error('failed to send command, details:', receivedSensorId, err);
 
-      if (err instanceof Error) return { success: false, detail: err.message };
-      return { success: false, detail: 'unknown error, visit the log' };
+      if (err instanceof Error) throw new TransmissionError(err.message);
+      throw new TransmissionError('unknown error, visit the log');
     }
   }
 }
