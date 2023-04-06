@@ -7,7 +7,7 @@ import { SkipCheck } from './core/domain/LimitChecker/SkipCheck';
 import {
   GetAllSensorUseCase,
   GetSingleSensorUseCase,
-  ProcessReadEventUseCase
+  ProcessReadEventUseCase,
 } from './core/usecases';
 import { ChangeSubscriptionUseCase } from './core/usecases/ChangeSubscription';
 import { GetAllNotificationsUseCase } from './core/usecases/GetAllNotifications';

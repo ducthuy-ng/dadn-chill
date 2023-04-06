@@ -4,7 +4,7 @@ import { SensorCommand } from '../../core/domain/SensorCommand';
 import {
   SensorController,
   SensorIdNotConnect,
-  TransmissionError
+  TransmissionError,
 } from '../../core/usecases/gateways/SensorController';
 import { Logger } from '../../core/usecases/Logger';
 import { SensorRepo } from '../../core/usecases/repos/SensorRepo';
