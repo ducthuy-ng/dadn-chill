@@ -1,11 +1,12 @@
-import { Sensor } from '../../core/domain/Sensor';
-import { BSLogger } from '../BSLogger';
-import { MqttSensorController } from '.';
-import { InMemSensorRepo } from '../InMemSensorRepo';
 import * as mqtt from 'async-mqtt';
+import { MqttSensorController } from '.';
+import { Sensor } from '../../core/domain/Sensor';
 import { SensorCommand } from '../../core/domain/SensorCommand';
-import { sleep } from '../testingTools';
+import { SensorIdNotConnect } from '../../core/usecases/gateways/SensorController';
 import { LogLevel } from '../../core/usecases/Logger';
+import { BSLogger } from '../BSLogger';
+import { InMemSensorRepo } from '../InMemSensorRepo';
+import { sleep } from '../testingTools';
 
 describe('Unit test for MQTT Sensor Controller', () => {
   const mqttEndPoint = 'mqtt://localhost:1883';
@@ -43,8 +44,7 @@ describe('Unit test for MQTT Sensor Controller', () => {
     controller.populateSensors(sensorRepo);
     await controller.startServer();
 
-    const result = await controller.forwardCommand(command1);
-    expect(result.success).toBeTruthy();
+    expect(controller.forwardCommand(command1)).resolves.not.toThrow();
     await new Promise(process.nextTick);
 
     await sleep(1);
@@ -68,8 +68,13 @@ describe('Unit test for MQTT Sensor Controller', () => {
     controller.populateSensors(sensorRepo);
     await controller.startServer();
 
-    const result = await controller.forwardCommand(command2);
-    expect(result.success).toBeFalsy();
+    try {
+      await controller.forwardCommand(command2);
+      throw new Error('forward command not throw');
+    } catch (err) {
+      expect(err).toBeInstanceOf(SensorIdNotConnect);
+    }
+
     await new Promise(process.nextTick);
 
     await sleep(1);
@@ -95,8 +100,7 @@ describe('Unit test for MQTT Sensor Controller', () => {
     await sleep(1);
 
     controller.prepareConnectionForSensor(sensor1.getId());
-    const result = await controller.forwardCommand(command1);
-    expect(result.success).toBeTruthy();
+    expect(controller.forwardCommand(command1)).resolves.not.toThrow();
     await new Promise(process.nextTick);
 
     await sleep(1);

@@ -2,11 +2,77 @@ openapi: '3.0.2'
 info:
   title: API Title
   version: '1.0'
+
 servers:
+  - url: http://localhost:3333
+    description: Self-hosted local development Backend server.
   - url: https://api.server.test/v1
+
 paths:
+  /health-check:
+    get:
+      responses:
+        '200':
+          description: Server is still good (IMO).
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/login:
+    post:
+      tags:
+        - auth
+      description: Generate an API key for user.
+      security: []
+      requestBody:
+        description: a JSON object containing email and password
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: 'nguyen.thuy@gmail.com'
+                password:
+                  type: string
+                  example: 'password'
+      responses:
+        '200':
+          description: Authenticate successfully, an API token is return.
+          headers:
+            X-API-KEY:
+              schema:
+                type: string
+                format: byte
+                example: 'NomZdpmyHrqPi+/x4c4/vK2XVmx7wbXd9TpmKWqc'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMsg'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/logout:
+    get:
+      tags:
+        - auth
+      description: Revoke API key of user. API Key auto revoke every 30 minutes.
+      responses:
+        '200':
+          description: API key revoked successfully.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
   /sensors:
     get:
+      tags:
+        - sensors
       parameters:
         - in: query
           name: page
@@ -23,14 +89,16 @@ paths:
                 items:
                   $ref: '#/components/schemas/Sensor'
         '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorMsg'
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /sensors/{id}:
     get:
+      tags:
+        - sensors
       parameters:
         - in: path
           required: true
@@ -44,22 +112,190 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Sensor'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
-  # /client/subscribe:
-  #   get:
-  #     parameters:
-  #       - in: query
-  #         name: sensorIds
-  #         schema:
-  #           type: array
-  #           uniqueItems: true
-  #           items:
-  #             type: number
-  #     responses:
-  #       '200':
-  #         description: OK
+  /streaming/subscribe:
+    get:
+      tags: [streaming]
+      parameters:
+        - in: query
+          name: sensorIds
+          schema:
+            type: array
+            uniqueItems: true
+            items:
+              type: number
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /streaming/changeSubscription:
+    get:
+      tags: [streaming]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                clientId:
+                  type: string
+                  format: uuid
+                sensorIds:
+                  type: array
+                  uniqueItems: false
+                  items:
+                    $ref: '#/components/schemas/SensorId'
+
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /notifications:
+    get:
+      description: Get all notifications, with offset and limit
+      tags: [Notification]
+      parameters:
+        - in: query
+          name: offset
+          schema:
+            type: number
+            default: 0
+        - in: query
+          name: limit
+          schema:
+            type: number
+            default: 10
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /statistics:
+    get:
+      description: Statistics route, used for drawing charts and graphs
+      tags: [Statistics]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                temperatureHistory:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      temperature:
+                        type: number
+                        example: 29
+                      day:
+                        type: string
+                        format: day
+                humidityHistory:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      humidity:
+                        type: number
+                        example: 30
+                      day:
+                        type: string
+                        format: day
+                lightIntensityHistory:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      lightIntensity:
+                        type: number
+                        example: 80
+                      day:
+                        type: string
+                        format: day
+                earthMoistureHistory:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      earthMoisture:
+                        type: number
+                        example: 60
+                      day:
+                        type: string
+                        format: day
+
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
 components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-KEY
+
+    oAuthSample:
+      type: oauth2
+      description: TODO - experiment purposes
+      flows:
+        authorizationCode:
+          authorizationUrl: /oauth2/authorize
+          tokenUrl: /oauth2/token
+          scopes:
+            all: all properties
+
+  responses:
+    UnauthorizedError:
+      description: API Key is missing or invalid.
+      headers:
+        WWW_Authenticate:
+          schema:
+            type: string
+    BadRequest:
+      description: Request is invalid, check the content `detail` for more information.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMsg'
+    InternalServerError:
+      description: An error occurs on the server side. Please try again later.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMsg'
+
   schemas:
     GeoLocation:
       type: array
@@ -69,11 +305,15 @@ components:
       maxItems: 2
       minItems: 2
 
+    SensorId:
+      type: number
+      example: 1
+
     Sensor:
       type: object
       properties:
         id:
-          type: number
+          $ref: '#/components/schemas/SensorId'
         name:
           type: string
         lastUpdateTimestamp:
@@ -102,3 +342,7 @@ components:
           type: string
           description: Error description, can be display to user
           example: Input must be a number
+
+security:
+  - ApiKeyAuth: []
+  - oAuthSample: [all]

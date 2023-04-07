@@ -1,29 +1,19 @@
 import { SensorCommand } from '../../core/domain/SensorCommand';
+import { InvalidPropertyType, MissingProperties } from './exceptions';
 
-export type ValidationResult = {
-  success: boolean;
-  errName: string;
-  errMsg: string;
-};
-
-export function validate(reqBody: unknown): ValidationResult {
+/**
+ *
+ * @throws MissingProperties InvalidPropertyType
+ * @returns
+ */
+export function validate(reqBody: unknown): void {
   if (reqBody['sensorId'] === undefined || reqBody['details'] === undefined) {
-    return {
-      success: false,
-      errName: 'MissingProperties',
-      errMsg: "Body properties must include: 'sensorId' and 'details'",
-    };
+    throw new MissingProperties("Body properties must include: 'sensorId' and 'details'");
   }
 
   if (typeof reqBody['sensorId'] !== 'number' || typeof reqBody['details'] !== 'number') {
-    return {
-      success: false,
-      errName: 'InvalidPropertyType',
-      errMsg: 'Body properties should be of correct type',
-    };
+    throw new InvalidPropertyType('Body properties should be of correct type');
   }
-
-  return { success: true, errName: '', errMsg: '' };
 }
 
 export function parseSensorCommand(reqBody: unknown): SensorCommand {

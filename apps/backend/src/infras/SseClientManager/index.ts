@@ -3,7 +3,7 @@ import { Response, Router } from 'express';
 import { Notification } from '../../core/domain/Notification';
 import { SensorId } from '../../core/domain/Sensor';
 import { SensorReadEvent } from '../../core/domain/SensorReadEvent';
-import { ClientId } from '../../core/usecases/gateways/ClientManager';
+import { ClientId, ClientIdNotFound } from '../../core/usecases/gateways/ClientManager';
 import { Logger } from '../../core/usecases/Logger';
 import { HttpClientManager } from '../ExpressServer/HttpClientManager';
 import { NotificationDto } from './NotificationDto';
@@ -85,14 +85,14 @@ export class SseClientManager implements HttpClientManager {
   }
 
   private handleCloseResp(clientId: ClientId, clientDetail: ClientDetails) {
-    this.logger.info('client disconnected');
-
     clientDetail.timeOutId = setTimeout(() => {
       this.clientMap.delete(clientId);
     }, SseClientManager.SECONDS_SINCE_LAST_CONNECTED * SECONDS_IN_MILLISECONDS);
 
+    clientDetail.connection.socket.destroy();
     clientDetail.connection.destroy();
     clientDetail.connection = null;
+    this.logger.info('client disconnected');
   }
 
   generateNewClientId(): ClientId {
@@ -114,9 +114,7 @@ export class SseClientManager implements HttpClientManager {
 
   changeClientSubscription(clientId: string, sensorIds: SensorId[]): void {
     const clientDetail = this.clientMap.get(clientId);
-    if (!clientDetail) {
-      return;
-    }
+    if (!clientDetail) throw new ClientIdNotFound(clientId);
 
     clientDetail.subscribedSensorIds = sensorIds;
   }

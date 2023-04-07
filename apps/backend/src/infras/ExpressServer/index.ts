@@ -1,17 +1,34 @@
-import express, { Application, RequestHandler, Router } from 'express';
+import express, {
+  Application,
+  ErrorRequestHandler,
+  Request,
+  RequestHandler,
+  Response,
+  Router,
+} from 'express';
 import { query, validationResult } from 'express-validator';
-import { Server } from 'http';
-import { GetAllSensorUseCase, GetSingleSensorUseCase } from '../../core/usecases';
+import http, { Server } from 'http';
 import { Logger } from '../../core/usecases/Logger';
 
 import * as bodyParser from 'body-parser';
 import cors from 'cors';
-import { ChangeSubscriptionUseCase } from '../../core/usecases/ChangeSubscription';
 import { ClientIdNotFound } from '../../core/usecases/gateways/ClientManager';
-import { SensorController } from '../../core/usecases/gateways/SensorController';
-import { GetAllNotificationsUseCase } from '../../core/usecases/GetAllNotifications';
-import { ClientSubscribeUseCase } from '../../core/usecases/StartClient';
-import { ErrorMsg } from './ErrorMsg';
+import {
+  SensorIdNotConnect,
+  TransmissionError,
+} from '../../core/usecases/gateways/SensorController';
+import { DomainRegistry } from '../DomainRegistry';
+import {
+  BadRequestError,
+  ClientIdMissing,
+  FailedToForwardCommand,
+  InternalServerError,
+  InvalidSensorList,
+  RequestClientIdNotFound,
+  RequestSensorIdNotConnect,
+  UnknownError,
+  ValidationError,
+} from './exceptions';
 import { HttpClientManager } from './HttpClientManager';
 import { convertToNotificationDto, NotificationDto } from './NotificationDto';
 import { parseSensorCommand, validate } from './SensorCommandDto';
@@ -20,64 +37,40 @@ import { GenerateDto, SensorDto } from './SensorDto';
 const DEFAULT_OFFSET = 0;
 const DEFAULT_LIMIT = 10;
 
+type ErrorMsg = {
+  name: string;
+  detail: string;
+};
+
 export class ExpressServer {
   private app: Application;
   private server: Server;
-  private listeningPort: number;
-
-  private getSingleSensorUC: GetSingleSensorUseCase;
-  private getSensorListUC: GetAllSensorUseCase;
-  private getAllNotificationsUC: GetAllNotificationsUseCase;
-  private clientSubscribeUC: ClientSubscribeUseCase;
-  private changeSubscriptionUC: ChangeSubscriptionUseCase;
-
-  private sensorController: SensorController;
 
   private logger: Logger;
 
-  constructor(
-    listeningPort = 3333,
-    getSingleSensorUC: GetSingleSensorUseCase,
-    getAllNotificationsUC: GetAllNotificationsUseCase,
-    getSensorListUC: GetAllSensorUseCase,
-    clientSubscribeUC: ClientSubscribeUseCase,
-    changeSubscriptionUC: ChangeSubscriptionUseCase,
-    httpClientManager: HttpClientManager,
-    sensorController: SensorController,
-    logger: Logger,
-    frontendEndpoint = 'localhost:4200'
-  ) {
+  constructor(httpClientManager: HttpClientManager, logger: Logger) {
     this.logger = logger;
-    this.sensorController = sensorController;
 
     this.app = express();
 
-    this.setupBodyParser();
-    this.setupCORS(frontendEndpoint);
+    this.setupPreRouter();
+    this.setupCORS();
+
     this.setupRestRouter();
     this.setupClientManagerRouter(httpClientManager);
-    this.setupPublic();
 
-    this.listeningPort = listeningPort;
-
-    this.getSingleSensorUC = getSingleSensorUC;
-    this.getSensorListUC = getSensorListUC;
-    this.getAllNotificationsUC = getAllNotificationsUC;
-    this.clientSubscribeUC = clientSubscribeUC;
-    this.changeSubscriptionUC = changeSubscriptionUC;
+    this.app.use(this.handleError);
   }
 
-  private setupPublic() {
+  private setupPreRouter() {
     this.app.set('view engine', 'html');
-  }
-
-  private setupBodyParser() {
+    this.app.use(this.handleLogging);
     this.app.use(bodyParser.json());
   }
 
-  private setupCORS(frontendEndpoint: string) {
+  private setupCORS() {
+    const frontendEndpoint = DomainRegistry.Instance.configManager.getFEEndpoint();
     const frontendEndpointList = frontendEndpoint.split(',');
-    this.logger.debug('Open CORS for Frontend', frontendEndpointList);
 
     this.app.use(
       cors({
@@ -85,10 +78,12 @@ export class ExpressServer {
         credentials: true,
       })
     );
+    this.logger.debug('Open CORS for Frontend', frontendEndpointList);
   }
 
   private setupRestRouter() {
     const router = express.Router();
+    router.use('/health-check', this.setupHealthCheckRouter());
     router.use('/sensors', this.getSensorRouter());
     router.use('/notifications', this.getNotificationRouter());
 
@@ -98,46 +93,39 @@ export class ExpressServer {
     this.app.use('/', router);
   }
 
+  private setupHealthCheckRouter() {
+    const router = express.Router();
+
+    router.get('/', (_req, res) => {
+      res.sendStatus(200);
+    });
+
+    return router;
+  }
+
   private setupClientManagerRouter(restClientManager: HttpClientManager) {
-    this.app.get('/streaming/subscribe', (req, res) => {
-      const clientId = this.clientSubscribeUC.execute();
+    this.app.get('/streaming/subscribe', (_req, res) => {
+      const subscribeClientUseCase = DomainRegistry.Instance.subscribeClientUC;
+      const clientId = subscribeClientUseCase.execute();
       res.send(clientId);
     });
 
     this.app.post('/streaming/changeSubscription', (req, res) => {
-      if (!req.body['clientId'] || typeof req.body['clientId'] !== 'string') {
-        res.status(400).json({
-          name: 'ClientIdMissing',
-          detail: 'Body object missing clientId field',
-        });
-        return;
-      }
+      const changeSubscriptionUC = DomainRegistry.Instance.changeClientSubscriptionUC;
 
-      if (!this.isArrayOfSensorId(req.body['sensorIds'])) {
-        res.status(400).json({
-          name: 'InvalidSensorList',
-          detail: 'Body should be an array of number (sensor IDs)',
-        });
-        return;
-      }
+      if (!req.body['clientId'] || typeof req.body['clientId'] !== 'string')
+        throw new ClientIdMissing('Body object missing clientId field');
+
+      if (!this.isArrayOfSensorId(req.body['sensorIds']))
+        throw new InvalidSensorList('Body should be an array of number (sensor IDs)');
 
       try {
-        this.changeSubscriptionUC.execute(req.body['clientId'], req.body['sensorIds']);
+        changeSubscriptionUC.execute(req.body['clientId'], req.body['sensorIds']);
         res.sendStatus(200);
       } catch (err) {
-        res.status(400);
-        if (err instanceof ClientIdNotFound) {
-          res.json({
-            name: 'ClientIdNotFound',
-            detail: 'Client not subscribed yet.',
-          });
-          return;
-        }
-
-        res.json({
-          name: 'InternalError',
-          detail: 'Internal error occurred',
-        });
+        if (err instanceof ClientIdNotFound)
+          throw new RequestClientIdNotFound(`Client not subscribed yet ${err.message}`);
+        throw err;
       }
     });
 
@@ -155,39 +143,31 @@ export class ExpressServer {
       '/',
       query('offset').optional().isInt().withMessage('Invalid query: offset'),
       query('limit').optional().isInt().withMessage('Invalid query: limit'),
+      this.validateRequest,
       this.handleGetAllSensors
     );
 
     return router;
   }
 
-  private handleGetAllSensors: RequestHandler<null, SensorDto[] | ErrorMsg> = async (req, res) => {
-    this.logger.info('/sensors', req.url);
+  private handleGetAllSensors: RequestHandler<null, SensorDto[]> = async (req, res, next) => {
+    const getAllSensorsUC = DomainRegistry.Instance.getAllSensorsUC;
 
     const validationErrors = validationResult(req);
     if (!validationErrors.isEmpty()) {
       const firstError = validationErrors.array()[0];
-      res.status(400).json({
-        name: 'ValidationError',
-        detail: firstError.msg,
-      });
-
-      return;
+      throw new ValidationError(firstError.msg);
     }
 
     const offset = parseInt(String(req.query.offset)) || DEFAULT_OFFSET;
     const limit = parseInt(String(req.query.limit)) || DEFAULT_LIMIT;
 
     try {
-      const [sensors, numOfSensor] = await this.getSensorListUC.execute(offset, limit);
-
+      const [sensors, numOfSensor] = await getAllSensorsUC.execute(offset, limit);
       const sensorDtoList = sensors.map((sensor) => GenerateDto(sensor));
       res.set('X-Content-Size', numOfSensor.toString()).json(sensorDtoList);
     } catch (err) {
-      res.status(400).json({
-        name: err.name || 'UnknownError',
-        detail: err.detail || 'Please check the log',
-      });
+      next(err);
     }
   };
 
@@ -196,79 +176,83 @@ export class ExpressServer {
     router.get(
       '/',
       query('offset').optional().isInt().withMessage('Invalid query: offset'),
-      query('limit').optional().isInt().withMessage('Invalid query: offset'),
+      query('limit').optional().isInt().withMessage('Invalid query: limit'),
+      this.validateRequest,
       this.getNotificationList
     );
 
     return router;
   }
 
-  private getNotificationList: RequestHandler<NotificationDto[] | ErrorMsg> = async (req, res) => {
-    this.logger.debug('/notifications', req.url);
-
-    const validationErrors = validationResult(req);
-    if (!validationErrors.isEmpty()) {
-      const firstError = validationErrors.array()[0];
-      res.status(400).json({
-        name: 'ValidationError',
-        detail: firstError.msg,
-      });
-
-      return;
-    }
+  private getNotificationList: RequestHandler<NotificationDto[]> = async (req, res) => {
+    const getAllNotificationsUC = DomainRegistry.Instance.getAllNotificationsUC;
 
     const offset = parseInt(String(req.query.offset)) || DEFAULT_OFFSET;
     const limit = parseInt(String(req.query.limit)) || DEFAULT_LIMIT;
 
-    try {
-      const [notifications, notificationNum] = await this.getAllNotificationsUC.execute(
-        offset,
-        limit
-      );
+    const [notifications, notificationNum] = await getAllNotificationsUC.execute(offset, limit);
+    const notificationDtoList = notifications.map(convertToNotificationDto);
 
-      const notificationDtoList = notifications.map(convertToNotificationDto);
-
-      res.status(200).set('X-Content-Size', notificationNum.toString()).send(notificationDtoList);
-    } catch (err) {
-      this.logger.error('an error occurred while fetching /notifications', err);
-
-      res.status(400).send({
-        name: err.name || 'UnknownError',
-        detail: err.message || 'Please check the log for details',
-      });
-    }
+    res.status(200).set('X-Content-Size', notificationNum.toString()).send(notificationDtoList);
   };
 
-  private handleCommandRequest: RequestHandler<unknown, ErrorMsg> = async (req, res) => {
-    const validateResult = validate(req.body);
+  private handleCommandRequest: RequestHandler<unknown, ErrorMsg> = async (req, res, next) => {
+    const sensorController = DomainRegistry.Instance.sensorController;
 
-    if (!validateResult.success) {
-      res.status(400).send({
-        name: validateResult.errName,
-        detail: validateResult.errMsg,
-      });
-      this.logger.debug('processed', req.url, req.body, validateResult.errMsg);
+    try {
+      validate(req.body);
+    } catch (err) {
+      next(err);
       return;
     }
 
     const command = parseSensorCommand(req.body);
 
-    const result = await this.sensorController.forwardCommand(command);
-    if (!result.success) {
-      res.status(400).send({
-        name: 'FailedToForwardCommand',
-        detail: result.detail,
-      });
+    try {
+      await sensorController.forwardCommand(command);
+      this.logger.debug('forward command', command);
+      res.sendStatus(200);
+    } catch (err) {
+      if (err instanceof SensorIdNotConnect) next(new RequestSensorIdNotConnect(err.message));
+      else if (err instanceof TransmissionError) next(new FailedToForwardCommand(err.message));
+      else next(new UnknownError());
       return;
     }
 
-    res.sendStatus(200);
     return;
   };
 
+  private validateRequest(req: Request, _res: Response, next: () => void) {
+    const validationErrors = validationResult(req);
+    if (!validationErrors.isEmpty()) {
+      const firstError = validationErrors.array()[0];
+      throw new ValidationError(firstError.msg);
+    }
+
+    next();
+  }
+
+  private handleLogging: RequestHandler = (req, res, next) => {
+    this.logger.info(req.originalUrl);
+    next();
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private handleError: ErrorRequestHandler<unknown, ErrorMsg> = (err, req, res, _next) => {
+    this.logger.error(req.url, err.name || 'UnknownError');
+    if (err instanceof BadRequestError)
+      res.status(400).json({ name: err.name, detail: err.detail });
+    else if (err instanceof InternalServerError)
+      res.status(500).json({ name: err.name, detail: err.detail });
+    else res.status(500).json({ name: 'UnknownError', detail: 'Please check the log for details' });
+  };
+
   startListening(callback?: () => void) {
-    this.server = this.app.listen(this.listeningPort, callback);
-    this.logger.info(`Start listening at port: ${this.listeningPort}`);
+    const listeningPort = DomainRegistry.Instance.configManager.getExpressListeningPort();
+    this.logger.info(`Start listening at port: ${listeningPort}`);
+
+    this.server = http.createServer(this.app);
+    this.server.listen(listeningPort, callback);
   }
 
   stopListening(callback?: () => void) {
