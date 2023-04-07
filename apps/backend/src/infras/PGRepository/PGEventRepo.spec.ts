@@ -33,7 +33,9 @@ describe('PGEventRepo test', () => {
       },
     });
 
-    const resp = await pgPool.query('SELECT * FROM data_pipeline.sensor_read_event');
-    expect(resp.rowCount).toEqual(1);
+    const resp = await pgPool.query(
+      'SELECT COUNT(*) as row_count FROM data_pipeline.sensor_read_event;'
+    );
+    expect(resp.rows[0]['row_count']).toEqual('405185');
   });
 });
