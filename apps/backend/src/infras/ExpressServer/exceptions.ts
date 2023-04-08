@@ -10,6 +10,19 @@ export abstract class ExpressError {
 export abstract class InternalServerError extends ExpressError {}
 export abstract class BadRequestError extends ExpressError {}
 
+export class InvalidCredential extends BadRequestError {
+  name: 'InvalidCredential';
+  constructor() {
+    super('Invalid email or password');
+  }
+}
+export class InvalidApiToken extends BadRequestError {
+  name: 'InvalidApiToken';
+  constructor() {
+    super('This token is invalid');
+  }
+}
+
 export class MissingProperties extends BadRequestError {}
 export class InvalidPropertyType extends BadRequestError {}
 
@@ -27,5 +40,12 @@ export class NotImplemented extends InternalServerError {}
 export class UnknownError extends InternalServerError {
   constructor() {
     super('Unknown error');
+  }
+}
+
+export class Unauthorized extends ExpressError {
+  name: 'Unauthorized';
+  constructor() {
+    super('You must login first to access this resource');
   }
 }

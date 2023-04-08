@@ -3,6 +3,7 @@ import { ChangeSubscriptionUseCase } from '../core/usecases/ChangeSubscription';
 import { SensorController } from '../core/usecases/gateways/SensorController';
 import { GetAllNotificationsUseCase } from '../core/usecases/GetAllNotifications';
 import { ConfigManager } from '../core/usecases/manager/ConfigManager';
+import { UserRepo } from '../core/usecases/repos/UserRepo';
 import { ClientSubscribeUseCase } from '../core/usecases/StartClient';
 
 export class UninitializedComponent implements Error {
@@ -29,6 +30,15 @@ export class DomainRegistry {
   }
   public set configManager(configManager: ConfigManager) {
     this._configManager = configManager;
+  }
+
+  private _userRepo: UserRepo;
+  public get userRepo() {
+    if (!this._userRepo) throw new UninitializedComponent('UserRepo');
+    return this._userRepo;
+  }
+  public set userRepo(userRepo: UserRepo) {
+    this._userRepo = userRepo;
   }
 
   private _sensorController: SensorController;

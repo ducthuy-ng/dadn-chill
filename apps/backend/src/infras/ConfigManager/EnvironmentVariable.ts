@@ -1,4 +1,5 @@
 import { ClientConfig } from 'pg';
+import { ConfigManager } from '../../core/usecases/manager/ConfigManager';
 
 export class MissingEnvVar implements Error {
   name: 'MissingEnvVar';
@@ -9,7 +10,8 @@ export class MissingEnvVar implements Error {
   }
 }
 
-export class EnvironmentVariablesProcessor {
+export class EnvironmentVariablesProcessor implements ConfigManager {
+  public static TRUE_SYMBOL = ['yes', 'true'];
   private envVars: NodeJS.ProcessEnv;
 
   constructor(processEnv: NodeJS.ProcessEnv) {
@@ -51,5 +53,25 @@ export class EnvironmentVariablesProcessor {
 
   public getExpressListeningPort(): number {
     return parseInt(this.envVars['EXPRESS_PORT']) || 3333;
+  }
+
+  allowUsingRandomPortForUnitTesting(): boolean {
+    if (!this.envVars['ALLOW_USING_RANDOM_PORT_FOR_UNIT_TEST']) {
+      return false;
+    }
+
+    const enableAuthStatus = this.envVars['ALLOW_USING_RANDOM_PORT_FOR_UNIT_TEST'].toLowerCase();
+
+    return EnvironmentVariablesProcessor.TRUE_SYMBOL.includes(enableAuthStatus);
+  }
+
+  getEnableAuthStatus(): boolean {
+    if (!this.envVars['ENABLE_AUTH']) {
+      return false;
+    }
+
+    const enableAuthStatus = this.envVars['ENABLE_AUTH'].toLowerCase();
+
+    return EnvironmentVariablesProcessor.TRUE_SYMBOL.includes(enableAuthStatus);
   }
 }

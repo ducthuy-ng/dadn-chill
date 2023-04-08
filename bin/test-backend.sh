@@ -15,5 +15,5 @@ docker compose -f ./docker-compose.dev.yaml up -d
 # Waiting for container to stablize
 sleep 5
 
-npx nx test backend --verbose --detectOpenHandles
+npx nx run backend:test:ci
 TEST_EXITCODE=$?

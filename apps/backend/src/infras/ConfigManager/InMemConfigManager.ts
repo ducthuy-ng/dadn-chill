@@ -6,7 +6,9 @@ export class InMemConfigManager implements ConfigManager {
   FEEndpoint = 'http://localhost:4200';
   MqttHostname?: string;
 
+  randomOverridePortForUnitTesting = false;
   ExpressListeningPort?: number;
+  enableRestAuth = false;
 
   getPGConnectionConfigs(): ClientConfig {
     return this.pgConnectionConfigs;
@@ -20,7 +22,15 @@ export class InMemConfigManager implements ConfigManager {
     return this.MqttHostname;
   }
 
+  allowUsingRandomPortForUnitTesting(): boolean {
+    return this.randomOverridePortForUnitTesting;
+  }
+
   getExpressListeningPort(): number {
     return this.ExpressListeningPort;
+  }
+
+  getEnableAuthStatus(): boolean {
+    return this.enableRestAuth;
   }
 }
