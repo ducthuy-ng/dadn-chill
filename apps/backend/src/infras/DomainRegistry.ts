@@ -2,6 +2,7 @@ import { GetAllSensorUseCase, GetSingleSensorUseCase } from '../core/usecases';
 import { ChangeSubscriptionUseCase } from '../core/usecases/ChangeSubscription';
 import { SensorController } from '../core/usecases/gateways/SensorController';
 import { GetAllNotificationsUseCase } from '../core/usecases/GetAllNotifications';
+import { LoginUseCase } from '../core/usecases/Login';
 import { ConfigManager } from '../core/usecases/manager/ConfigManager';
 import { UserRepo } from '../core/usecases/repos/UserRepo';
 import { ClientSubscribeUseCase } from '../core/usecases/StartClient';
@@ -95,5 +96,14 @@ export class DomainRegistry {
   }
   public set changeClientSubscriptionUC(changeClientSubscriptionUC: ChangeSubscriptionUseCase) {
     this._changeClientSubscriptionUC = changeClientSubscriptionUC;
+  }
+
+  private _logUC: LoginUseCase;
+  public get loginUC() {
+    if (!this._logUC) throw new UninitializedComponent('LoginUseCase');
+    return this._logUC;
+  }
+  public set loginUC(loginUC: LoginUseCase) {
+    this._logUC = loginUC;
   }
 }

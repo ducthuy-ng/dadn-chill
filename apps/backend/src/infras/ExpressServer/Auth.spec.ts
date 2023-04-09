@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { ExpressServer } from '.';
 import { GetAllSensorUseCase } from '../../core/usecases';
 import { LogLevel } from '../../core/usecases/Logger';
+import { LoginUseCase } from '../../core/usecases/Login';
 import { BSLogger } from '../BSLogger';
 import { InMemConfigManager } from '../ConfigManager/InMemConfigManager';
 import { DomainRegistry } from '../DomainRegistry';
@@ -26,6 +27,8 @@ describe('Test setup authentication in REST Server', () => {
 
     const sensorRepo = new InMemSensorRepo();
     domainRegistry.getAllSensorsUC = new GetAllSensorUseCase(sensorRepo);
+
+    domainRegistry.loginUC = new LoginUseCase(domainRegistry);
   });
 
   test('If enable auth, fetch a restricted resource should return 401', async () => {
@@ -114,6 +117,7 @@ describe('Test authentication in REST server', () => {
 
   const sensorRepo = new InMemSensorRepo();
   domainRegistry.getAllSensorsUC = new GetAllSensorUseCase(sensorRepo);
+  domainRegistry.loginUC = new LoginUseCase(domainRegistry);
 
   const server = new ExpressServer(
     domainRegistry,
@@ -254,7 +258,7 @@ describe('Test authentication in REST server', () => {
         'x-api-key': apiKey,
       },
     });
-    await axios.get(`http://localhost:${listeningPort}/aut/logout`, {
+    await axios.get(`http://localhost:${listeningPort}/auth/logout`, {
       headers: {
         'x-api-key': apiKey,
       },

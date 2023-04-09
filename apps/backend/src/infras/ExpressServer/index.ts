@@ -282,47 +282,24 @@ export class ExpressServer {
     const email = req.body.email;
     const password = req.body.password;
 
-    const userRepo = this.domainRegistry.userRepo;
-
-    const user = await userRepo.getByEmail(email);
-
-    if (!user) {
+    const newApiKey = await this.domainRegistry.loginUC.execute(email, password);
+    if (!newApiKey) {
       next(new InvalidCredential());
       return;
     }
 
-    const [salt, hashedStoredPassword] = user.getHashedPassword().split(':');
-    scrypt(password, salt, 64, (err, inputHashedPassword) => {
-      if (err) {
-        next(err);
-        return;
-      }
+    this.assignedApiToken.set(
+      newApiKey,
+      setTimeout(
+        () => this.assignedApiToken.delete(newApiKey),
+        30 * SECONDS_IN_MINUTE * MILLISECONDS_IN_SECOND
+      )
+    );
 
-      const inputHexPassword = inputHashedPassword.toString('hex');
-
-      if (!(inputHexPassword === hashedStoredPassword)) {
-        next(new InvalidCredential());
-        return;
-      }
-
-      const newApiKey = randomUUID();
-      console.log(newApiKey);
-
-      this.assignedApiToken.set(
-        newApiKey,
-        setTimeout(
-          () => this.assignedApiToken.delete(newApiKey),
-          30 * SECONDS_IN_MINUTE * MILLISECONDS_IN_SECOND
-        )
-      );
-
-      res.status(200).setHeader('x-api-key', newApiKey).send();
-    });
+    res.status(200).setHeader('x-api-key', newApiKey).send();
   };
 
   private processLogoutRequest: RequestHandler = (req, res, next) => {
-    console.log(req.headers);
-
     if (!req.header('x-api-key')) {
       next(new InvalidApiToken());
       return;
@@ -391,7 +368,7 @@ export class ExpressServer {
 
   stopListening(callback?: () => void) {
     this.logger.info(`Shutting down`);
-    this.flushAllApiKey()
+    this.flushAllApiKey();
     this.server.close(callback);
   }
 

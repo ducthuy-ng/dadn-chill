@@ -81,7 +81,9 @@ describe('Test /health-check routes', () => {
 
 describe('Test /sensors routes', () => {
   test('Simple get all sensors should work', async () => {
-    const resp = await axios.get<SensorDto[]>(`http://localhost:${listeningPort}/sensors?offset=1&limit=1`);
+    const resp = await axios.get<SensorDto[]>(
+      `http://localhost:${listeningPort}/sensors?offset=1&limit=1`
+    );
 
     const resultDto = resp.data;
     expect(resultDto).toHaveLength(1);
@@ -186,7 +188,9 @@ describe('Test /notification routes', () => {
         Notification.generate(sensor1, 'test notification', 'dummy notifications')
       );
 
-    const resp = await axios.get<NotificationDto[]>(`http://localhost:${listeningPort}/notifications`);
+    const resp = await axios.get<NotificationDto[]>(
+      `http://localhost:${listeningPort}/notifications`
+    );
     const resultDto = resp.data;
 
     notificationRepo.clean();
@@ -199,7 +203,9 @@ describe('Test /notification routes', () => {
   });
 
   test('offset equal to total count should return empty', async () => {
-    const resp = await axios.get<NotificationDto[]>(`http://localhost:${listeningPort}/notifications?offset=2`);
+    const resp = await axios.get<NotificationDto[]>(
+      `http://localhost:${listeningPort}/notifications?offset=2`
+    );
 
     const resultDto = resp.data;
     expect(resultDto).toHaveLength(0);
