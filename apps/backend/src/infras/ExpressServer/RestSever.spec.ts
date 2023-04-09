@@ -41,30 +41,31 @@ notificationRepo.add(notification2);
 
 // ======================== Create use cases and infrastructures ========================
 
-DomainRegistry.Instance.getSingleSensorUC = new GetSingleSensorUseCase(sensorRepo);
-DomainRegistry.Instance.getAllSensorsUC = new GetAllSensorUseCase(sensorRepo);
-DomainRegistry.Instance.getAllNotificationsUC = new GetAllNotificationsUseCase(notificationRepo);
+const domainRegistry = new DomainRegistry();
+domainRegistry.getSingleSensorUC = new GetSingleSensorUseCase(sensorRepo);
+domainRegistry.getAllSensorsUC = new GetAllSensorUseCase(sensorRepo);
+domainRegistry.getAllNotificationsUC = new GetAllNotificationsUseCase(notificationRepo);
 
 const testLogger = new BSLogger('test sensor', { level: LogLevel.DEBUG });
 
 const restClientManager = new RestClientManager(testLogger);
-DomainRegistry.Instance.subscribeClientUC = new ClientSubscribeUseCase(restClientManager);
-DomainRegistry.Instance.changeClientSubscriptionUC = new ChangeSubscriptionUseCase(
-  restClientManager
-);
+domainRegistry.subscribeClientUC = new ClientSubscribeUseCase(restClientManager);
+domainRegistry.changeClientSubscriptionUC = new ChangeSubscriptionUseCase(restClientManager);
 
 const configs = new InMemConfigManager();
-configs.ExpressListeningPort = 3333;
-DomainRegistry.Instance.configManager = configs;
+configs.randomOverridePortForUnitTesting = true;
+domainRegistry.configManager = configs;
 
 const sensorController = new DummySensorController();
 sensorController.prepareConnectionForSensor(1);
-DomainRegistry.Instance.sensorController = sensorController;
+domainRegistry.sensorController = sensorController;
 
-const server = new ExpressServer(restClientManager, testLogger);
+const server = new ExpressServer(domainRegistry, restClientManager, testLogger);
+
+let listeningPort: number;
 
 beforeAll((done) => {
-  server.startListening(done);
+  listeningPort = server.startListening(done);
 });
 
 afterAll((done) => {
@@ -73,14 +74,16 @@ afterAll((done) => {
 
 describe('Test /health-check routes', () => {
   test('Simple get should return 200', async () => {
-    const response = await axios.get('http://localhost:3333/health-check');
+    const response = await axios.get(`http://localhost:${listeningPort}/health-check`);
     expect(response.status).toEqual(200);
   });
 });
 
 describe('Test /sensors routes', () => {
   test('Simple get all sensors should work', async () => {
-    const resp = await axios.get<SensorDto[]>('http://localhost:3333/sensors?offset=1&limit=1');
+    const resp = await axios.get<SensorDto[]>(
+      `http://localhost:${listeningPort}/sensors?offset=1&limit=1`
+    );
 
     const resultDto = resp.data;
     expect(resultDto).toHaveLength(1);
@@ -93,7 +96,7 @@ describe('Test /sensors routes', () => {
   test('Missing query should default to offset=0 and limit=10', async () => {
     for (let i = 3; i <= 12; ++i) sensorRepo.saveSensor(new Sensor(i, `dummy-sensor-name-${i}`));
 
-    const resp = await axios.get<SensorDto[]>('http://localhost:3333/sensors');
+    const resp = await axios.get<SensorDto[]>(`http://localhost:${listeningPort}/sensors`);
     const resultDto = resp.data;
 
     sensorRepo.clean();
@@ -106,7 +109,7 @@ describe('Test /sensors routes', () => {
   });
 
   test('offset equal to total count should return empty', async () => {
-    const resp = await axios.get<SensorDto[]>('http://localhost:3333/sensors?offset=2');
+    const resp = await axios.get<SensorDto[]>(`http://localhost:${listeningPort}/sensors?offset=2`);
 
     const resultDto = resp.data;
     expect(resultDto).toHaveLength(0);
@@ -114,7 +117,7 @@ describe('Test /sensors routes', () => {
 
   test('Invalid query should throw error', async () => {
     try {
-      await axios.get<SensorDto[]>('http://localhost:3333/sensors?offset=b');
+      await axios.get<SensorDto[]>(`http://localhost:${listeningPort}/sensors?offset=b`);
       throw new Error();
     } catch (err) {
       if (!(err instanceof AxiosError)) throw new Error();
@@ -128,7 +131,7 @@ describe('Test /sensors routes', () => {
 
 describe('Test /command route', () => {
   test('Simple command send should work', async () => {
-    const resp = await axios.post('http://localhost:3333/command', {
+    const resp = await axios.post(`http://localhost:${listeningPort}/command`, {
       sensorId: 1,
       details: 1,
     });
@@ -138,7 +141,7 @@ describe('Test /command route', () => {
 
   test('Send command to non-register sensor should fail', async () => {
     const resp = await axios.post(
-      'http://localhost:3333/command',
+      `http://localhost:${listeningPort}/command`,
       {
         sensorId: 2,
         details: 1,
@@ -152,7 +155,7 @@ describe('Test /command route', () => {
 
   test('Validation should occurred before forwarding', async () => {
     const resp = await axios.post(
-      'http://localhost:3333/command',
+      `http://localhost:${listeningPort}/command`,
       {
         sensorId: 2,
         details: '1',
@@ -168,7 +171,7 @@ describe('Test /command route', () => {
 describe('Test /notification routes', () => {
   test('Simple get all notifications should work', async () => {
     const resp = await axios.get<NotificationDto[]>(
-      'http://localhost:3333/notifications?offset=0&limit=1'
+      `http://localhost:${listeningPort}/notifications?offset=0&limit=1`
     );
 
     const resultDto = resp.data;
@@ -185,7 +188,9 @@ describe('Test /notification routes', () => {
         Notification.generate(sensor1, 'test notification', 'dummy notifications')
       );
 
-    const resp = await axios.get<NotificationDto[]>('http://localhost:3333/notifications');
+    const resp = await axios.get<NotificationDto[]>(
+      `http://localhost:${listeningPort}/notifications`
+    );
     const resultDto = resp.data;
 
     notificationRepo.clean();
@@ -198,7 +203,9 @@ describe('Test /notification routes', () => {
   });
 
   test('offset equal to total count should return empty', async () => {
-    const resp = await axios.get<NotificationDto[]>('http://localhost:3333/notifications?offset=2');
+    const resp = await axios.get<NotificationDto[]>(
+      `http://localhost:${listeningPort}/notifications?offset=2`
+    );
 
     const resultDto = resp.data;
     expect(resultDto).toHaveLength(0);
@@ -206,7 +213,7 @@ describe('Test /notification routes', () => {
 
   test('Invalid query should throw error', async () => {
     const response = await axios.get<NotificationDto[]>(
-      'http://localhost:3333/notifications?limit=a',
+      `http://localhost:${listeningPort}/notifications?limit=a`,
       {
         validateStatus: () => true,
       }

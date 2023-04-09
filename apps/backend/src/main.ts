@@ -63,7 +63,11 @@ const eventMQ = new MqttEventMQ(
 );
 eventMQ.onNewEvent(processReadEventUC);
 
-const server = new ExpressServer(clientManager, new BSLogger('ExpressServer', {}));
+const server = new ExpressServer(
+  DomainRegistry.Instance,
+  clientManager,
+  new BSLogger('ExpressServer', {})
+);
 
 server.use('/doc', express.static(path.join(__dirname, 'assets')));
 

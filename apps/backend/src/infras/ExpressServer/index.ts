@@ -6,12 +6,14 @@ import express, {
   Response,
   Router,
 } from 'express';
-import { query, validationResult } from 'express-validator';
+import { body, query, validationResult } from 'express-validator';
 import http, { Server } from 'http';
 import { Logger } from '../../core/usecases/Logger';
 
 import * as bodyParser from 'body-parser';
 import cors from 'cors';
+import { randomUUID, scrypt } from 'crypto';
+import { AddressInfo } from 'net';
 import { ClientIdNotFound } from '../../core/usecases/gateways/ClientManager';
 import {
   SensorIdNotConnect,
@@ -23,9 +25,12 @@ import {
   ClientIdMissing,
   FailedToForwardCommand,
   InternalServerError,
+  InvalidApiToken,
+  InvalidCredential,
   InvalidSensorList,
   RequestClientIdNotFound,
   RequestSensorIdNotConnect,
+  Unauthorized,
   UnknownError,
   ValidationError,
 } from './exceptions';
@@ -37,6 +42,9 @@ import { GenerateDto, SensorDto } from './SensorDto';
 const DEFAULT_OFFSET = 0;
 const DEFAULT_LIMIT = 10;
 
+const SECONDS_IN_MINUTE = 60;
+const MILLISECONDS_IN_SECOND = 1000;
+
 type ErrorMsg = {
   name: string;
   detail: string;
@@ -46,10 +54,19 @@ export class ExpressServer {
   private app: Application;
   private server: Server;
 
+  private assignedApiToken = new Map();
+
+  private domainRegistry: DomainRegistry;
+
   private logger: Logger;
 
-  constructor(httpClientManager: HttpClientManager, logger: Logger) {
+  constructor(
+    domainRegistry: DomainRegistry,
+    httpClientManager: HttpClientManager,
+    logger: Logger
+  ) {
     this.logger = logger;
+    this.domainRegistry = domainRegistry;
 
     this.app = express();
 
@@ -69,7 +86,7 @@ export class ExpressServer {
   }
 
   private setupCORS() {
-    const frontendEndpoint = DomainRegistry.Instance.configManager.getFEEndpoint();
+    const frontendEndpoint = this.domainRegistry.configManager.getFEEndpoint();
     const frontendEndpointList = frontendEndpoint.split(',');
 
     this.app.use(
@@ -81,14 +98,37 @@ export class ExpressServer {
     this.logger.debug('Open CORS for Frontend', frontendEndpointList);
   }
 
+  private AuthenticationMiddleware: RequestHandler = (req, res, next) => {
+    const enableAuth = this.domainRegistry.configManager.getEnableAuthStatus();
+    if (!enableAuth) {
+      next();
+      return;
+    }
+
+    if (!req.header('x-api-key')) {
+      throw new Unauthorized();
+    }
+    const apiKey = req.header('x-api-key');
+
+    if (!this.assignedApiToken.has(apiKey)) {
+      throw new Unauthorized();
+    }
+
+    next();
+  };
+
   private setupRestRouter() {
     const router = express.Router();
     router.use('/health-check', this.setupHealthCheckRouter());
-    router.use('/sensors', this.getSensorRouter());
-    router.use('/notifications', this.getNotificationRouter());
+    router.use('/sensors', this.AuthenticationMiddleware, this.getSensorRouter());
+    router.use('/notifications', this.AuthenticationMiddleware, this.getNotificationRouter());
 
     router.post('/command', this.handleCommandRequest);
     // TODO: router.get<null, SensorDto[] | ErrorMsg>('/sensor/:id', this.handleGetSensorList);
+
+    const enableAuth = this.domainRegistry.configManager.getEnableAuthStatus();
+    this.logger.debug('enable authentication', enableAuth);
+    if (enableAuth) router.use('/auth', this.setupAuthRouter());
 
     this.app.use('/', router);
   }
@@ -105,13 +145,13 @@ export class ExpressServer {
 
   private setupClientManagerRouter(restClientManager: HttpClientManager) {
     this.app.get('/streaming/subscribe', (_req, res) => {
-      const subscribeClientUseCase = DomainRegistry.Instance.subscribeClientUC;
+      const subscribeClientUseCase = this.domainRegistry.subscribeClientUC;
       const clientId = subscribeClientUseCase.execute();
       res.send(clientId);
     });
 
     this.app.post('/streaming/changeSubscription', (req, res) => {
-      const changeSubscriptionUC = DomainRegistry.Instance.changeClientSubscriptionUC;
+      const changeSubscriptionUC = this.domainRegistry.changeClientSubscriptionUC;
 
       if (!req.body['clientId'] || typeof req.body['clientId'] !== 'string')
         throw new ClientIdMissing('Body object missing clientId field');
@@ -151,7 +191,7 @@ export class ExpressServer {
   }
 
   private handleGetAllSensors: RequestHandler<null, SensorDto[]> = async (req, res, next) => {
-    const getAllSensorsUC = DomainRegistry.Instance.getAllSensorsUC;
+    const getAllSensorsUC = this.domainRegistry.getAllSensorsUC;
 
     const validationErrors = validationResult(req);
     if (!validationErrors.isEmpty()) {
@@ -185,7 +225,7 @@ export class ExpressServer {
   }
 
   private getNotificationList: RequestHandler<NotificationDto[]> = async (req, res) => {
-    const getAllNotificationsUC = DomainRegistry.Instance.getAllNotificationsUC;
+    const getAllNotificationsUC = this.domainRegistry.getAllNotificationsUC;
 
     const offset = parseInt(String(req.query.offset)) || DEFAULT_OFFSET;
     const limit = parseInt(String(req.query.limit)) || DEFAULT_LIMIT;
@@ -197,7 +237,7 @@ export class ExpressServer {
   };
 
   private handleCommandRequest: RequestHandler<unknown, ErrorMsg> = async (req, res, next) => {
-    const sensorController = DomainRegistry.Instance.sensorController;
+    const sensorController = this.domainRegistry.sensorController;
 
     try {
       validate(req.body);
@@ -222,6 +262,61 @@ export class ExpressServer {
     return;
   };
 
+  private setupAuthRouter() {
+    const router = express.Router();
+
+    router.post(
+      '/login',
+      body('email').notEmpty().isEmail(),
+      body('password').notEmpty(),
+      this.validateRequest,
+      this.processLoginRequest
+    );
+
+    router.get('/logout', this.processLogoutRequest);
+
+    return router;
+  }
+
+  private processLoginRequest: RequestHandler = async (req, res, next) => {
+    const email = req.body.email;
+    const password = req.body.password;
+
+    const newApiKey = await this.domainRegistry.loginUC.execute(email, password);
+    if (!newApiKey) {
+      next(new InvalidCredential());
+      return;
+    }
+
+    this.assignedApiToken.set(
+      newApiKey,
+      setTimeout(
+        () => this.assignedApiToken.delete(newApiKey),
+        30 * SECONDS_IN_MINUTE * MILLISECONDS_IN_SECOND
+      )
+    );
+
+    res.status(200).setHeader('x-api-key', newApiKey).send();
+  };
+
+  private processLogoutRequest: RequestHandler = (req, res, next) => {
+    if (!req.header('x-api-key')) {
+      next(new InvalidApiToken());
+      return;
+    }
+
+    const apiToken = req.header('x-api-key');
+    if (!this.assignedApiToken.has(apiToken)) {
+      next(new InvalidApiToken());
+      return;
+    }
+
+    clearTimeout(this.assignedApiToken.get(apiToken));
+    this.assignedApiToken.delete(apiToken);
+
+    res.status(200).send();
+  };
+
   private validateRequest(req: Request, _res: Response, next: () => void) {
     const validationErrors = validationResult(req);
     if (!validationErrors.isEmpty()) {
@@ -240,24 +335,47 @@ export class ExpressServer {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private handleError: ErrorRequestHandler<unknown, ErrorMsg> = (err, req, res, _next) => {
     this.logger.error(req.url, err.name || 'UnknownError');
-    if (err instanceof BadRequestError)
+
+    if (err instanceof BadRequestError) {
       res.status(400).json({ name: err.name, detail: err.detail });
-    else if (err instanceof InternalServerError)
+    } else if (err instanceof InternalServerError) {
       res.status(500).json({ name: err.name, detail: err.detail });
-    else res.status(500).json({ name: 'UnknownError', detail: 'Please check the log for details' });
+    } else if (err instanceof Unauthorized) {
+      res.status(401).set('www-authenticate', 'basic').send();
+    } else {
+      res.status(500).json({ name: 'UnknownError', detail: 'Please check the log for details' });
+    }
   };
 
-  startListening(callback?: () => void) {
-    const listeningPort = DomainRegistry.Instance.configManager.getExpressListeningPort();
-    this.logger.info(`Start listening at port: ${listeningPort}`);
-
+  startListening(callback?: () => void): number {
     this.server = http.createServer(this.app);
-    this.server.listen(listeningPort, callback);
+
+    const useRandomPortForUnitTesting =
+      this.domainRegistry.configManager.allowUsingRandomPortForUnitTesting();
+
+    if (useRandomPortForUnitTesting) {
+      this.server.listen(callback);
+    } else {
+      const listeningPort = this.domainRegistry.configManager.getExpressListeningPort();
+      this.server.listen(listeningPort, callback);
+    }
+
+    const serverListeningPort = (this.server.address() as AddressInfo).port;
+    this.logger.info('Start listening at port', serverListeningPort);
+
+    return serverListeningPort;
   }
 
   stopListening(callback?: () => void) {
     this.logger.info(`Shutting down`);
+    this.flushAllApiKey();
     this.server.close(callback);
+  }
+
+  private flushAllApiKey() {
+    for (const [, timerId] of this.assignedApiToken) {
+      clearTimeout(timerId);
+    }
   }
 
   use(path: string, callback: RequestHandler) {

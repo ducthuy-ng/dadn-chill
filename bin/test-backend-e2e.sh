@@ -5,11 +5,12 @@ set -eufx
 E2E_EXITCODE=1
 
 __cleanup() {
-  docker compose -f ./docker-compose.dev.yaml down --volumes
   kill $BACKEND_PID
-
   # Wait for backend to exit cleanly
   sleep 2
+  
+  docker compose -f ./docker-compose.dev.yaml down --volumes
+
 
   exit $E2E_EXITCODE
 }
