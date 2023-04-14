@@ -2,6 +2,8 @@ FROM node:16.19.1 AS builder
 WORKDIR /app
 
 COPY ./package*.json .
+
+
 RUN npm ci
 
 COPY . .
@@ -23,6 +25,7 @@ COPY ./package*.json .
 RUN addgroup --system backend && \
   adduser --system -G backend backend
 RUN chown -R backend:backend .
+
 
 RUN npm ci --omit=dev
 
