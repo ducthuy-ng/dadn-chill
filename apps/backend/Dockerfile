@@ -11,7 +11,7 @@ RUN npx nx run backend:build:production --verbose
 
 # ====================================================
 
-FROM docker.io/node:lts-alpine
+FROM --platform=$TARGETPLATFORM docker.io/node:lts-alpine
 
 ENV HOST=0.0.0.0
 ENV EXPRESS_PORT=3333
