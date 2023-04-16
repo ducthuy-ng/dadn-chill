@@ -204,54 +204,66 @@ paths:
             schema:
               type: object
               properties:
-                temperatureHistory:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      temperature:
-                        type: number
-                        example: 29
-                      day:
-                        type: string
-                        format: day
-                humidityHistory:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      humidity:
-                        type: number
-                        example: 30
-                      day:
-                        type: string
-                        format: day
-                lightIntensityHistory:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      lightIntensity:
-                        type: number
-                        example: 80
-                      day:
-                        type: string
-                        format: day
-                earthMoistureHistory:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      earthMoisture:
-                        type: number
-                        example: 60
-                      day:
-                        type: string
-                        format: day
+                startDate:
+                  type: string
+                  format: date-time
+                endDate:
+                  type: string
+                  format: date-time
 
       responses:
         '200':
           description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  temperatureHistory:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        temperature:
+                          type: number
+                          example: 29
+                        day:
+                          type: string
+                          format: date-time
+                  humidityHistory:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        humidity:
+                          type: number
+                          example: 30
+                        day:
+                          type: string
+                          format: date-time
+                  lightIntensityHistory:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        lightIntensity:
+                          type: number
+                          example: 80
+                        day:
+                          type: string
+                          format: date-time
+                  earthMoistureHistory:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        earthMoisture:
+                          type: number
+                          example: 60
+                        day:
+                          type: string
+                          format: date-time
+
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
