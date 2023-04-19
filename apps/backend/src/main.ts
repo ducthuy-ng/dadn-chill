@@ -6,7 +6,9 @@ import path from 'path';
 import { SkipCheck } from './core/domain/LimitChecker/SkipCheck';
 import {
   GetAllSensorUseCase,
+  GetAnalysisDataForSensorUseCase,
   GetSingleSensorUseCase,
+  GetTotalAnalysisDataUseCase,
   ProcessReadEventUseCase,
 } from './core/usecases';
 import { ChangeSubscriptionUseCase } from './core/usecases/ChangeSubscription';
@@ -22,10 +24,12 @@ import { MqttSensorController } from './infras/MqttSensorController';
 import { PGRepository } from './infras/PGRepository';
 import { SseClientManager } from './infras/SseClientManager';
 
-DomainRegistry.Instance.configManager = new EnvironmentVariablesProcessor(process.env);
+const domainRegistry = new DomainRegistry();
+
+domainRegistry.configManager = new EnvironmentVariablesProcessor(process.env);
 
 const PGRepo = new PGRepository(
-  DomainRegistry.Instance.configManager.getPGConnectionConfigs(),
+  domainRegistry.configManager.getPGConnectionConfigs(),
   new BSLogger('PGRepo', { level: LogLevel.DEBUG })
 );
 
@@ -35,18 +39,22 @@ const clientManager = new SseClientManager({
 });
 
 const sensorController = new MqttSensorController(
-  DomainRegistry.Instance.configManager.getMqttHostname(),
+  domainRegistry.configManager.getMqttHostname(),
   new BSLogger('MqttServerController', {})
 );
 sensorController.populateSensors(PGRepo);
 
-DomainRegistry.Instance.getSingleSensorUC = new GetSingleSensorUseCase(PGRepo);
-DomainRegistry.Instance.getAllSensorsUC = new GetAllSensorUseCase(PGRepo);
-DomainRegistry.Instance.getAllNotificationsUC = new GetAllNotificationsUseCase(PGRepo);
-DomainRegistry.Instance.subscribeClientUC = new ClientSubscribeUseCase(clientManager);
-DomainRegistry.Instance.changeClientSubscriptionUC = new ChangeSubscriptionUseCase(clientManager);
+domainRegistry.getSingleSensorUC = new GetSingleSensorUseCase(PGRepo);
+domainRegistry.getAllSensorsUC = new GetAllSensorUseCase(PGRepo);
+domainRegistry.getAllNotificationsUC = new GetAllNotificationsUseCase(PGRepo);
+domainRegistry.subscribeClientUC = new ClientSubscribeUseCase(clientManager);
+domainRegistry.changeClientSubscriptionUC = new ChangeSubscriptionUseCase(clientManager);
+domainRegistry.getTotalStatisticUC = new GetTotalAnalysisDataUseCase(domainRegistry);
+domainRegistry.getAnalysisDataForSensorUC = new GetAnalysisDataForSensorUseCase(domainRegistry);
 
-DomainRegistry.Instance.sensorController = sensorController;
+domainRegistry.analysisTool = PGRepo;
+
+domainRegistry.sensorController = sensorController;
 
 const processReadEventUC = new ProcessReadEventUseCase(
   PGRepo,
@@ -57,17 +65,13 @@ const processReadEventUC = new ProcessReadEventUseCase(
 );
 
 const eventMQ = new MqttEventMQ(
-  DomainRegistry.Instance.configManager.getMqttHostname(),
+  domainRegistry.configManager.getMqttHostname(),
   'chill-topic',
   new BSLogger('MqttEventMQ', {})
 );
 eventMQ.onNewEvent(processReadEventUC);
 
-const server = new ExpressServer(
-  DomainRegistry.Instance,
-  clientManager,
-  new BSLogger('ExpressServer', {})
-);
+const server = new ExpressServer(domainRegistry, clientManager, new BSLogger('ExpressServer', {}));
 
 server.use('/doc', express.static(path.join(__dirname, 'assets')));
 

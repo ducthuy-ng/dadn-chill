@@ -1,9 +1,16 @@
-import { GetAllSensorUseCase, GetSingleSensorUseCase } from '../core/usecases';
+import {
+  GetAllSensorUseCase,
+  GetAnalysisDataForSensorUseCase,
+  GetSingleSensorUseCase,
+  GetTotalAnalysisDataUseCase,
+} from '../core/usecases';
 import { ChangeSubscriptionUseCase } from '../core/usecases/ChangeSubscription';
+import { AnalysisTool } from '../core/usecases/gateways/AnalysisTool';
 import { SensorController } from '../core/usecases/gateways/SensorController';
 import { GetAllNotificationsUseCase } from '../core/usecases/GetAllNotifications';
 import { LoginUseCase } from '../core/usecases/Login';
 import { ConfigManager } from '../core/usecases/manager/ConfigManager';
+import { SensorRepo } from '../core/usecases/repos/SensorRepo';
 import { UserRepo } from '../core/usecases/repos/UserRepo';
 import { ClientSubscribeUseCase } from '../core/usecases/StartClient';
 
@@ -33,6 +40,15 @@ export class DomainRegistry {
     this._configManager = configManager;
   }
 
+  private _sensorRepo: SensorRepo;
+  public get sensorRepo() {
+    if (!this._sensorRepo) throw new UninitializedComponent('SensorRepo');
+    return this._sensorRepo;
+  }
+  public set sensorRepo(sensorRepo: SensorRepo) {
+    this._sensorRepo = sensorRepo;
+  }
+
   private _userRepo: UserRepo;
   public get userRepo() {
     if (!this._userRepo) throw new UninitializedComponent('UserRepo');
@@ -49,6 +65,15 @@ export class DomainRegistry {
   }
   public set sensorController(sensorController: SensorController) {
     this._sensorController = sensorController;
+  }
+
+  private _analysisTool: AnalysisTool;
+  public get analysisTool() {
+    if (!this._analysisTool) throw new UninitializedComponent('AnalysisTool');
+    return this._analysisTool;
+  }
+  public set analysisTool(analysisTool: AnalysisTool) {
+    this._analysisTool = analysisTool;
   }
 
   private _getAllSensorsUC: GetAllSensorUseCase;
@@ -98,12 +123,33 @@ export class DomainRegistry {
     this._changeClientSubscriptionUC = changeClientSubscriptionUC;
   }
 
-  private _logUC: LoginUseCase;
+  private _loginUC: LoginUseCase;
   public get loginUC() {
-    if (!this._logUC) throw new UninitializedComponent('LoginUseCase');
-    return this._logUC;
+    if (!this._loginUC) throw new UninitializedComponent('LoginUseCase');
+    return this._loginUC;
   }
   public set loginUC(loginUC: LoginUseCase) {
-    this._logUC = loginUC;
+    this._loginUC = loginUC;
+  }
+
+  private _getTotalStatisticUC: GetTotalAnalysisDataUseCase;
+  public get getTotalStatisticUC() {
+    if (!this._getTotalStatisticUC) throw new UninitializedComponent('GetTotalAnalysisDataUseCase');
+    return this._getTotalStatisticUC;
+  }
+  public set getTotalStatisticUC(getTotalStatisticUC: GetTotalAnalysisDataUseCase) {
+    this._getTotalStatisticUC = getTotalStatisticUC;
+  }
+
+  private _getAnalysisDataForSensorUC: GetAnalysisDataForSensorUseCase;
+  public get getAnalysisDataForSensorUC() {
+    if (!this._getAnalysisDataForSensorUC)
+      throw new UninitializedComponent('GetAnalysisDataForSensorUseCase');
+    return this._getAnalysisDataForSensorUC;
+  }
+  public set getAnalysisDataForSensorUC(
+    getAnalysisDataForSensorUC: GetAnalysisDataForSensorUseCase
+  ) {
+    this._getAnalysisDataForSensorUC = getAnalysisDataForSensorUC;
   }
 }

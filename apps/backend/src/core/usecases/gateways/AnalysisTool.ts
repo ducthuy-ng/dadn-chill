@@ -1,34 +1,14 @@
-type TemperatureHistoryItem = {
-  temperature: number;
-  recordedTimeStamp: string;
-};
-
-type HumidityHistoryItem = {
-  humidity: number;
-  recordedTimeStamp: string;
-};
-
-type LightIntensityHistoryItem = {
-  lightIntensity: number;
-  recordedTimeStamp: string;
-};
-
-type EarthMoistureHistoryItem = {
-  EarthMoisture: number;
-  recordedTimeStamp: string;
-};
+import { SensorId } from '../../domain/Sensor';
+import { AnalysisResult } from '../GetTotalAnalysisData';
 
 interface AnalysisTool {
-  getTemperatureLastWeekByDayScaleOfSensor(sensorId: number): TemperatureHistoryItem[];
-  getHumidityLastWeekByDayScaleOfSensor(sensorId: number): HumidityHistoryItem[];
-  getLightIntensityLastWeekByDayScaleOfSensor(sensorId: number): LightIntensityHistoryItem[];
-  getEarthMoistureLastWeekByDayScaleOfSensor(sensorId: number): EarthMoistureHistoryItem[];
+  getAnalysisResultOfSensor(
+    id: SensorId,
+    startDate: string,
+    endDate: string
+  ): Promise<AnalysisResult>;
+
+  getTotalAnalysisResult(startDate: string, endDate: string): Promise<AnalysisResult>;
 }
 
-export {
-  TemperatureHistoryItem,
-  HumidityHistoryItem,
-  LightIntensityHistoryItem,
-  EarthMoistureHistoryItem,
-  AnalysisTool,
-};
+export { AnalysisTool };

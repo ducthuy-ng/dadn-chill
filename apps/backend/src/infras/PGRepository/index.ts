@@ -2,13 +2,15 @@ import { ConnectionConfig, Pool } from 'pg';
 import { Notification } from '../../core/domain/Notification';
 import { Sensor, SensorId } from '../../core/domain/Sensor';
 import { SensorReadEvent } from '../../core/domain/SensorReadEvent';
+import { AnalysisTool } from '../../core/usecases/gateways/AnalysisTool';
+import { AnalysisResult } from '../../core/usecases/GetTotalAnalysisData';
 import { Logger } from '../../core/usecases/Logger';
 import { NotificationRepo } from '../../core/usecases/repos/NotificationRepo';
 import { FailedToStoreEvent, ReadEventRepo } from '../../core/usecases/repos/ReadEventRepo';
 import { SensorRepo } from '../../core/usecases/repos/SensorRepo';
 import { RetrievedNotificationDto } from './NotificationPgDto';
 
-export class PGRepository implements SensorRepo, NotificationRepo, ReadEventRepo {
+export class PGRepository implements SensorRepo, NotificationRepo, ReadEventRepo, AnalysisTool {
   private connectionPool: Pool;
 
   private logger: Logger;
@@ -195,5 +197,64 @@ export class PGRepository implements SensorRepo, NotificationRepo, ReadEventRepo
     );
 
     if (result.rowCount !== 1) throw new FailedToStoreEvent('SQL execution error');
+  }
+
+  async getAnalysisResultOfSensor(
+    id: number,
+    startDate: string,
+    endDate: string
+  ): Promise<AnalysisResult> {
+    this.logger.debug('Calculating analysis result', id, startDate, endDate);
+    const result = await this.connectionPool.query(
+      'SELECT * FROM data_pipeline.calculate_avg_for_sensor($1, $2, $3);',
+      [id, startDate, endDate]
+    );
+
+    return this.parseStatisticDto(result.rows);
+  }
+
+  async getTotalAnalysisResult(startDate: string, endDate: string): Promise<AnalysisResult> {
+    this.logger.debug('Calculating total analysis result', startDate, endDate);
+    const result = await this.connectionPool.query(
+      'SELECT * FROM data_pipeline.calculate_all_sensors_avg($1, $2);',
+      [startDate, endDate]
+    );
+
+    return this.parseStatisticDto(result.rows);
+  }
+
+  private parseStatisticDto(rowDto: unknown[]): AnalysisResult {
+    const analysisResult: AnalysisResult = {
+      temperatureData: [],
+      humidityData: [],
+      lightIntensityData: [],
+      earthMoistureData: [],
+    };
+
+    rowDto.forEach((row) => {
+      const aggDate = (row['agg_date'] as Date).toISOString();
+
+      analysisResult.temperatureData.push({
+        calculatedDate: aggDate,
+        averageValue: row['avg_temp'],
+      });
+
+      analysisResult.humidityData.push({
+        calculatedDate: aggDate,
+        averageValue: row['avg_humid'],
+      });
+
+      analysisResult.lightIntensityData.push({
+        calculatedDate: aggDate,
+        averageValue: row['avg_light'],
+      });
+
+      analysisResult.earthMoistureData.push({
+        calculatedDate: aggDate,
+        averageValue: row['avg_moist'],
+      });
+    });
+
+    return analysisResult;
   }
 }

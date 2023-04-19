@@ -1,10 +1,12 @@
-import { GetAnalysisDataUseCase } from './GetAnalysisData';
 import { GetAllSensorUseCase } from './GetAllSensors';
+import { GetAnalysisDataForSensorUseCase } from './GetAnalysisDataForSensor';
 import { GetSingleSensorUseCase } from './GetSingleSensor';
+import { GetTotalAnalysisDataUseCase } from './GetTotalAnalysisData';
 import { ProcessReadEventUseCase } from './ProcessReadEvent';
 
 export {
-  GetAnalysisDataUseCase,
+  GetTotalAnalysisDataUseCase,
+  GetAnalysisDataForSensorUseCase,
   ProcessReadEventUseCase,
   GetSingleSensorUseCase,
   GetAllSensorUseCase,
