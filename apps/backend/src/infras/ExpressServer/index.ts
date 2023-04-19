@@ -6,19 +6,19 @@ import express, {
   Response,
   Router,
 } from 'express';
-import { body, query, validationResult } from 'express-validator';
+import { body, param, query, validationResult } from 'express-validator';
 import http, { Server } from 'http';
 import { Logger } from '../../core/usecases/Logger';
 
 import * as bodyParser from 'body-parser';
 import cors from 'cors';
-import { randomUUID, scrypt } from 'crypto';
 import { AddressInfo } from 'net';
 import { ClientIdNotFound } from '../../core/usecases/gateways/ClientManager';
 import {
   SensorIdNotConnect,
   TransmissionError,
 } from '../../core/usecases/gateways/SensorController';
+import { SensorIdNotFound } from '../../core/usecases/repos/SensorRepo';
 import { DomainRegistry } from '../DomainRegistry';
 import {
   BadRequestError,
@@ -27,6 +27,7 @@ import {
   InternalServerError,
   InvalidApiToken,
   InvalidCredential,
+  InvalidSensorId,
   InvalidSensorList,
   RequestClientIdNotFound,
   RequestSensorIdNotConnect,
@@ -38,6 +39,7 @@ import { HttpClientManager } from './HttpClientManager';
 import { convertToNotificationDto, NotificationDto } from './NotificationDto';
 import { parseSensorCommand, validate } from './SensorCommandDto';
 import { GenerateDto, SensorDto } from './SensorDto';
+import { mapAnalysisResultToDto } from './StatisticDto';
 
 const DEFAULT_OFFSET = 0;
 const DEFAULT_LIMIT = 10;
@@ -81,7 +83,6 @@ export class ExpressServer {
 
   private setupPreRouter() {
     this.app.set('view engine', 'html');
-    this.app.use(this.handleLogging);
     this.app.use(bodyParser.json());
   }
 
@@ -128,9 +129,14 @@ export class ExpressServer {
 
     const enableAuth = this.domainRegistry.configManager.getEnableAuthStatus();
     this.logger.debug('enable authentication', enableAuth);
-    if (enableAuth) router.use('/auth', this.setupAuthRouter());
+    if (enableAuth) {
+      router.use('/auth', this.setupAuthRouter());
+    }
+
+    router.use('/statistics', this.AuthenticationMiddleware, this.setupStatisticRouter());
 
     this.app.use('/', router);
+    this.app.use(this.handleLogging);
   }
 
   private setupHealthCheckRouter() {
@@ -317,6 +323,66 @@ export class ExpressServer {
     res.status(200).send();
   };
 
+  private setupStatisticRouter(): Router {
+    const router = express.Router();
+
+    router.post(
+      '/',
+      body('startDate')
+        .isISO8601()
+        .withMessage('startDate must be an ISO-8601 compliant timestamp'),
+      body('startDate').isISO8601().withMessage('endDate must be an ISO-8601 compliant timestamp'),
+      this.validateRequest,
+      this.processGetAllSensorsStatistic
+    );
+
+    router.post(
+      '/:sensorId',
+      param('sensorId').isNumeric().withMessage('sensorId must be a number'),
+      body('startDate')
+        .isISO8601()
+        .withMessage('startDate must be an ISO-8601 compliant timestamp'),
+      body('startDate').isISO8601().withMessage('endDate must be an ISO-8601 compliant timestamp'),
+      this.validateRequest,
+      this.processStatisticForSensor
+    );
+
+    return router;
+  }
+
+  private processGetAllSensorsStatistic: RequestHandler = async (req, res, next) => {
+    const startDate = req.body.startDate;
+    const endDate = req.body.endDate;
+
+    try {
+      const useCase = this.domainRegistry.getTotalStatisticUC;
+      const result = await useCase.execute(startDate, endDate);
+      const analysisResultDto = mapAnalysisResultToDto(result);
+      res.json(analysisResultDto);
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  private processStatisticForSensor: RequestHandler = async (req, res, next) => {
+    const sensorId = parseInt(req.params.sensorId);
+    const startDate = req.body.startDate;
+    const endDate = req.body.endDate;
+
+    try {
+      const useCase = this.domainRegistry.getAnalysisDataForSensorUC;
+      const result = await useCase.execute(sensorId, startDate, endDate);
+      const analysisResultDto = mapAnalysisResultToDto(result);
+      res.json(analysisResultDto);
+    } catch (err) {
+      if (err instanceof SensorIdNotFound) {
+        next(new InvalidSensorId(sensorId));
+      } else {
+        next(err);
+      }
+    }
+  };
+
   private validateRequest(req: Request, _res: Response, next: () => void) {
     const validationErrors = validationResult(req);
     if (!validationErrors.isEmpty()) {
@@ -328,13 +394,13 @@ export class ExpressServer {
   }
 
   private handleLogging: RequestHandler = (req, res, next) => {
-    this.logger.info(req.originalUrl);
+    this.logger.info('received request', req.originalUrl, req.query, req.body);
     next();
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private handleError: ErrorRequestHandler<unknown, ErrorMsg> = (err, req, res, _next) => {
-    this.logger.error(req.url, err.name || 'UnknownError');
+    this.logger.error(req.url, err.name || 'UnknownError', err);
 
     if (err instanceof BadRequestError) {
       res.status(400).json({ name: err.name, detail: err.detail });

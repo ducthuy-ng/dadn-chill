@@ -33,6 +33,12 @@ export class ValidationError extends BadRequestError {}
 
 export class RequestSensorIdNotConnect extends BadRequestError {}
 
+export class InvalidSensorId extends BadRequestError {
+  constructor(id: number) {
+    super(`Invalid sensor Id: ${id}`);
+  }
+}
+
 export class MissingComponent extends InternalServerError {}
 export class FailedToForwardCommand extends InternalServerError {}
 export class NotImplemented extends InternalServerError {}
@@ -44,7 +50,6 @@ export class UnknownError extends InternalServerError {
 }
 
 export class Unauthorized extends ExpressError {
-  name: 'Unauthorized';
   constructor() {
     super('You must login first to access this resource');
   }
