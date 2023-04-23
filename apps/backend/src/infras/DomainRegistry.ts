@@ -1,4 +1,5 @@
 import {
+  ForwardNotificationUseCase,
   GetAllSensorUseCase,
   GetAnalysisDataForSensorUseCase,
   GetSingleSensorUseCase,
@@ -6,10 +7,12 @@ import {
 } from '../core/usecases';
 import { ChangeSubscriptionUseCase } from '../core/usecases/ChangeSubscription';
 import { AnalysisTool } from '../core/usecases/gateways/AnalysisTool';
+import { ClientManager } from '../core/usecases/gateways/ClientManager';
 import { SensorController } from '../core/usecases/gateways/SensorController';
 import { GetAllNotificationsUseCase } from '../core/usecases/GetAllNotifications';
 import { LoginUseCase } from '../core/usecases/Login';
 import { ConfigManager } from '../core/usecases/manager/ConfigManager';
+import { NotificationRepo } from '../core/usecases/repos/NotificationRepo';
 import { SensorRepo } from '../core/usecases/repos/SensorRepo';
 import { UserRepo } from '../core/usecases/repos/UserRepo';
 import { ClientSubscribeUseCase } from '../core/usecases/StartClient';
@@ -56,6 +59,24 @@ export class DomainRegistry {
   }
   public set userRepo(userRepo: UserRepo) {
     this._userRepo = userRepo;
+  }
+
+  private _notificationRepo: NotificationRepo;
+  public get notificationRepo() {
+    if (!this._notificationRepo) throw new UninitializedComponent('NotificationRepo');
+    return this._notificationRepo;
+  }
+  public set notificationRepo(notificationRepo: NotificationRepo) {
+    this._notificationRepo = notificationRepo;
+  }
+
+  private _clientManager: ClientManager;
+  public get clientManager() {
+    if (!this._clientManager) throw new UninitializedComponent('ClientManager');
+    return this._clientManager;
+  }
+  public set clientManager(clientManager: ClientManager) {
+    this._clientManager = clientManager;
   }
 
   private _sensorController: SensorController;
@@ -151,5 +172,15 @@ export class DomainRegistry {
     getAnalysisDataForSensorUC: GetAnalysisDataForSensorUseCase
   ) {
     this._getAnalysisDataForSensorUC = getAnalysisDataForSensorUC;
+  }
+
+  private _ForwardNotificationUC: ForwardNotificationUseCase;
+  public get forwardNotificationUC() {
+    if (!this._ForwardNotificationUC)
+      throw new UninitializedComponent('ForwardNotificationUseCase');
+    return this._ForwardNotificationUC;
+  }
+  public set forwardNotificationUC(forwardNotificationUC: ForwardNotificationUseCase) {
+    this._ForwardNotificationUC = forwardNotificationUC;
   }
 }

@@ -44,8 +44,8 @@ export class FailedToForwardCommand extends InternalServerError {}
 export class NotImplemented extends InternalServerError {}
 
 export class UnknownError extends InternalServerError {
-  constructor() {
-    super('Unknown error');
+  constructor(exception?: unknown) {
+    super(`Unknown error: ${exception}`);
   }
 }
 

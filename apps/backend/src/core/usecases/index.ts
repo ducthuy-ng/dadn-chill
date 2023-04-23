@@ -3,6 +3,7 @@ import { GetAnalysisDataForSensorUseCase } from './GetAnalysisDataForSensor';
 import { GetSingleSensorUseCase } from './GetSingleSensor';
 import { GetTotalAnalysisDataUseCase } from './GetTotalAnalysisData';
 import { ProcessReadEventUseCase } from './ProcessReadEvent';
+import { ForwardNotificationUseCase } from './ForwardNotification';
 
 export {
   GetTotalAnalysisDataUseCase,
@@ -10,4 +11,5 @@ export {
   ProcessReadEventUseCase,
   GetSingleSensorUseCase,
   GetAllSensorUseCase,
+  ForwardNotificationUseCase,
 };

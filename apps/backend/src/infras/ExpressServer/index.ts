@@ -64,8 +64,8 @@ export class ExpressServer {
 
   constructor(
     domainRegistry: DomainRegistry,
-    httpClientManager: HttpClientManager,
-    logger: Logger
+    logger: Logger,
+    httpClientManager?: HttpClientManager
   ) {
     this.logger = logger;
     this.domainRegistry = domainRegistry;
@@ -76,7 +76,10 @@ export class ExpressServer {
     this.setupCORS();
 
     this.setupRestRouter();
-    this.setupClientManagerRouter(httpClientManager);
+
+    if (httpClientManager) {
+      this.setupClientManagerRouter(httpClientManager);
+    }
 
     this.app.use(this.handleError);
   }
@@ -123,6 +126,8 @@ export class ExpressServer {
     router.use('/health-check', this.setupHealthCheckRouter());
     router.use('/sensors', this.AuthenticationMiddleware, this.getSensorRouter());
     router.use('/notifications', this.AuthenticationMiddleware, this.getNotificationRouter());
+
+    router.use('/notification-webhook', this.getNotificationWebhookRouter());
 
     router.post('/command', this.handleCommandRequest);
     // TODO: router.get<null, SensorDto[] | ErrorMsg>('/sensor/:id', this.handleGetSensorList);
@@ -240,6 +245,40 @@ export class ExpressServer {
     const notificationDtoList = notifications.map(convertToNotificationDto);
 
     res.status(200).set('X-Content-Size', notificationNum.toString()).send(notificationDtoList);
+  };
+
+  private getNotificationWebhookRouter(): Router {
+    const router = express.Router();
+    router.post(
+      '/',
+      body('originSensorId').isNumeric().withMessage('Invalid query: originSensorId'),
+      body('header').exists().withMessage('Missing property: header'),
+      body('content').exists().withMessage('Missing property: content'),
+      this.validateRequest,
+      this.processIncomingNotification
+    );
+
+    return router;
+  }
+
+  private processIncomingNotification: RequestHandler<NotificationDto[]> = async (
+    req,
+    res,
+    next
+  ) => {
+    const originSensorId = parseInt(req.body['originSensorId']);
+
+    try {
+      const useCase = this.domainRegistry.forwardNotificationUC;
+      await useCase.execute(originSensorId, req.body['header'], req.body['content']);
+      res.sendStatus(200);
+    } catch (exception) {
+      if (exception instanceof SensorIdNotFound) {
+        next(new InvalidSensorId(originSensorId));
+      } else {
+        next(new UnknownError(exception));
+      }
+    }
   };
 
   private handleCommandRequest: RequestHandler<unknown, ErrorMsg> = async (req, res, next) => {

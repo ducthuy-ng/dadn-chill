@@ -9,7 +9,6 @@ import { InMemConfigManager } from '../ConfigManager/InMemConfigManager';
 import { DomainRegistry } from '../DomainRegistry';
 import { InMemSensorRepo } from '../InMemSensorRepo';
 import { PGRepository } from '../PGRepository';
-import { RestClientManager } from './RestClientManager';
 
 describe('Test statistic in REST API', () => {
   const configs = new InMemConfigManager();
@@ -38,7 +37,6 @@ describe('Test statistic in REST API', () => {
 
   const server = new ExpressServer(
     domainRegistry,
-    new RestClientManager(new BSLogger('rest-client-manager-test', {})),
     new BSLogger('express-server-test', { level: LogLevel.DEBUG })
   );
   let listeningPort: number;

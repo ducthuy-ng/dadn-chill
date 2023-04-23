@@ -1,6 +1,7 @@
 import { Pool } from 'pg';
 import { PGRepository } from '.';
 import { Sensor } from '../../core/domain/Sensor';
+import { SensorIdNotFound } from '../../core/usecases/repos/SensorRepo';
 import { BSLogger } from '../BSLogger';
 
 describe('PGSensorRepo test', () => {
@@ -50,12 +51,16 @@ describe('PGSensorRepo test', () => {
     });
 
     await sensorRepo.saveSensor(sensor);
-    let retrievedSensor = await sensorRepo.getById(7);
+    const retrievedSensor = await sensorRepo.getById(7);
     expect(retrievedSensor).not.toBeNull();
 
     await sensorRepo.deleteById(7);
-    retrievedSensor = await sensorRepo.getById(7);
-    expect(retrievedSensor).toBeNull();
+
+    try {
+      await sensorRepo.getById(7);
+    } catch (exception) {
+      expect(exception).toBeInstanceOf(SensorIdNotFound);
+    }
   });
 
   test('Insert then update should success', async () => {
@@ -76,7 +81,7 @@ describe('PGSensorRepo test', () => {
     });
     await sensorRepo.saveSensor(sensor);
 
-    let retrievedSensor = await sensorRepo.getById(7);
+    const retrievedSensor = await sensorRepo.getById(7);
     retrievedSensor.processReadEvent({
       sensorId: 7,
       readTimestamp: new Date().toISOString(),
@@ -101,7 +106,6 @@ describe('PGSensorRepo test', () => {
     });
 
     await sensorRepo.deleteById(7);
-    retrievedSensor = await sensorRepo.getById(7);
   });
 
   test('Get all sensors', async () => {

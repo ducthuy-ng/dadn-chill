@@ -7,7 +7,7 @@ import { AnalysisResult } from '../../core/usecases/GetTotalAnalysisData';
 import { Logger } from '../../core/usecases/Logger';
 import { NotificationRepo } from '../../core/usecases/repos/NotificationRepo';
 import { FailedToStoreEvent, ReadEventRepo } from '../../core/usecases/repos/ReadEventRepo';
-import { SensorRepo } from '../../core/usecases/repos/SensorRepo';
+import { SensorIdNotFound, SensorRepo } from '../../core/usecases/repos/SensorRepo';
 import { RetrievedNotificationDto } from './NotificationPgDto';
 
 export class PGRepository implements SensorRepo, NotificationRepo, ReadEventRepo, AnalysisTool {
@@ -126,7 +126,7 @@ export class PGRepository implements SensorRepo, NotificationRepo, ReadEventRepo
     );
   }
 
-  async getById(id: number): Promise<Sensor | null> {
+  async getById(id: number): Promise<Sensor> {
     this.logger.debug(`Get sensor by ID: ${id}`);
 
     const result = await this.connectionPool.query(
@@ -134,7 +134,9 @@ export class PGRepository implements SensorRepo, NotificationRepo, ReadEventRepo
       [id]
     );
 
-    if (result.rowCount !== 1) return null;
+    if (result.rowCount !== 1) {
+      throw new SensorIdNotFound(id);
+    }
 
     return this.convertDtoToSensor(result.rows[0]);
   }

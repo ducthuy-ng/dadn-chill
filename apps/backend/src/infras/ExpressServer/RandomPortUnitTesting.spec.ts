@@ -4,7 +4,6 @@ import { BSLogger } from '../BSLogger';
 import { InMemConfigManager } from '../ConfigManager/InMemConfigManager';
 import { DomainRegistry } from '../DomainRegistry';
 import { sleep } from '../testingTools';
-import { RestClientManager } from './RestClientManager';
 
 const configs = new InMemConfigManager();
 configs.ExpressListeningPort = 3334;
@@ -16,7 +15,6 @@ describe('Testing `RandomPort` feature', () => {
 
     const server = new ExpressServer(
       DomainRegistry.Instance,
-      new RestClientManager(new BSLogger('rest-client-manager-test', {})),
       new BSLogger('express-server-test', {})
     );
 
@@ -34,7 +32,6 @@ describe('Testing `RandomPort` feature', () => {
 
     const server = new ExpressServer(
       DomainRegistry.Instance,
-      new RestClientManager(new BSLogger('rest-client-manager-test', {})),
       new BSLogger('express-server-test', {})
     );
 
@@ -56,7 +53,6 @@ describe('Testing `RandomPort` feature', () => {
 
     const server = new ExpressServer(
       DomainRegistry.Instance,
-      new RestClientManager(new BSLogger('rest-client-manager-test', {})),
       new BSLogger('express-server-test', {})
     );
 

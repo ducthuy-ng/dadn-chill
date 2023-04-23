@@ -9,6 +9,11 @@ packages = [{include = "dadn_chill"}]
 
 [tool.poetry.dependencies]
 python = "^3.8"
+scikit-learn = "^1.2.2"
+paho-mqtt = "^1.6.1"
+python-dotenv = "^1.0.0"
+pandas = "^2.0.0"
+requests = "^2.28.2"
 
 
 [tool.poetry.group.ml.dependencies]
@@ -16,6 +21,10 @@ scikit-learn = "^1.2.2"
 pandas = "^2.0.0"
 jupyter = "^1.0.0"
 matplotlib = "^3.7.1"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.3.0"
 
 [build-system]
 requires = ["poetry-core"]
