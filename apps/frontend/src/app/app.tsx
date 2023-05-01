@@ -9,12 +9,19 @@ import Sidebar from '../components/Sidebar';
 import { sidebar } from '../core/services/store';
 import { useAtom } from 'jotai';
 import NotFound from '../pages/NotFound';
+import Login from '../components/Login';
+import { useState } from 'react';
 
 export function App() {
   const [show] = useAtom(sidebar);
+  const [token, setToken] = useState();
+
+  if (!token) {
+    return <Login setToken={setToken} />;
+  }
 
   return (
-    <>
+    <div className="login-wrapper">
       <Sidebar />
       <div className={`flex h-screen flex-col${show ? ' blur' : ''}`}>
         <Navbar />
@@ -33,7 +40,7 @@ export function App() {
           <Route path="/*" element={<NotFound />} />
         </Routes>
       </div>
-    </>
+    </div>
   );
 }
 
