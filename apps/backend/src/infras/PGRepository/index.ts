@@ -1,16 +1,21 @@
+import { log } from 'console';
 import { ConnectionConfig, Pool } from 'pg';
 import { Notification } from '../../core/domain/Notification';
 import { Sensor, SensorId } from '../../core/domain/Sensor';
 import { SensorReadEvent } from '../../core/domain/SensorReadEvent';
+import { User } from '../../core/domain/User';
 import { AnalysisTool } from '../../core/usecases/gateways/AnalysisTool';
 import { AnalysisResult } from '../../core/usecases/GetTotalAnalysisData';
 import { Logger } from '../../core/usecases/Logger';
 import { NotificationRepo } from '../../core/usecases/repos/NotificationRepo';
 import { FailedToStoreEvent, ReadEventRepo } from '../../core/usecases/repos/ReadEventRepo';
 import { SensorRepo } from '../../core/usecases/repos/SensorRepo';
+import { UserRepo } from '../../core/usecases/repos/UserRepo';
 import { RetrievedNotificationDto } from './NotificationPgDto';
 
-export class PGRepository implements SensorRepo, NotificationRepo, ReadEventRepo, AnalysisTool {
+export class PGRepository
+  implements SensorRepo, NotificationRepo, ReadEventRepo, AnalysisTool, UserRepo
+{
   private connectionPool: Pool;
 
   private logger: Logger;
@@ -256,5 +261,37 @@ export class PGRepository implements SensorRepo, NotificationRepo, ReadEventRepo
     });
 
     return analysisResult;
+  }
+
+  async getByUserId(id: string): Promise<User | null> {
+    this.logger.debug('Get user by user ID: ', id);
+
+    try {
+      const result = await this.connectionPool.query(
+        'SELECT * FROM data_pipeline.user WHERE id=$1 LIMIT 1;',
+        [id]
+      );
+
+      if (result.rowCount !== 1) return null;
+      return this.convertDtoToUser(result.rows[0]);
+    } catch (err) {
+      return null;
+    }
+  }
+
+  async getByEmail(email: string): Promise<User | null> {
+    this.logger.debug('Get user by email: ', email);
+
+    const result = await this.connectionPool.query(
+      'SELECT * FROM data_pipeline.user WHERE email=$1 LIMIT 1;',
+      [email]
+    );
+
+    if (result.rowCount !== 1) return null;
+    return this.convertDtoToUser(result.rows[0]);
+  }
+
+  convertDtoToUser(userDto: unknown): User {
+    return new User(userDto['id'], userDto['name'], userDto['email'], userDto['hashedpassword']);
   }
 }

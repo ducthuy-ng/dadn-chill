@@ -24,7 +24,7 @@ describe('PGSensorRepo test', () => {
 
   test('Get existing sensor by ID', async () => {
     const sensor = await sensorRepo.getById(1);
-    expect(sensor).not.toBeNull;
+    expect(sensor).not.toBeNull();
   });
 
   test.skip('Get next with default data should return 7', async () => {
