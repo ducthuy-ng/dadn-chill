@@ -7,7 +7,7 @@ export interface SensorRepo {
    *
    * @throws {SensorIdNotFound}
    */
-  getById(id: SensorId): Promise<Sensor | null>;
+  getById(id: SensorId): Promise<Sensor>;
 
   getAllSensorIds(): Promise<SensorId[]>;
 

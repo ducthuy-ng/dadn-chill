@@ -60,7 +60,7 @@ const sensorController = new DummySensorController();
 sensorController.prepareConnectionForSensor(1);
 domainRegistry.sensorController = sensorController;
 
-const server = new ExpressServer(domainRegistry, restClientManager, testLogger);
+const server = new ExpressServer(domainRegistry, testLogger);
 
 let listeningPort: number;
 

@@ -194,6 +194,32 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
+  /notification-webhook:
+    post:
+      description: Webhook for external tool to send notification.
+      tags: [Notification]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                originSensorId:
+                  type: number
+                header:
+                  type: string
+                content:
+                  type: string
+
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
   /statistics:
     get:
       description: Statistics route, used for drawing charts and graphs

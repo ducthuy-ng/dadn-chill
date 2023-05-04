@@ -10,7 +10,6 @@ import { DomainRegistry } from '../DomainRegistry';
 import { InMemSensorRepo } from '../InMemSensorRepo';
 import { InMemUserRepo } from '../InMemUserRepo';
 import { sleep } from '../testingTools';
-import { RestClientManager } from './RestClientManager';
 
 jest.setTimeout(10000);
 
@@ -34,11 +33,7 @@ describe('Test setup authentication in REST Server', () => {
   test('If enable auth, fetch a restricted resource should return 401', async () => {
     configs.enableRestAuth = true;
 
-    const server = new ExpressServer(
-      domainRegistry,
-      new RestClientManager(new BSLogger('rest-client-manager-test', {})),
-      new BSLogger('express-server-test', {})
-    );
+    const server = new ExpressServer(domainRegistry, new BSLogger('express-server-test', {}));
 
     const listeningPort = server.startListening();
     await sleep(2);
@@ -57,11 +52,7 @@ describe('Test setup authentication in REST Server', () => {
   test('If disable auth, fetch a restricted resource should success', async () => {
     configs.enableRestAuth = false;
 
-    const server = new ExpressServer(
-      domainRegistry,
-      new RestClientManager(new BSLogger('rest-client-manager-test', {})),
-      new BSLogger('express-server-test', {})
-    );
+    const server = new ExpressServer(domainRegistry, new BSLogger('express-server-test', {}));
 
     const listeningPort = server.startListening();
     await sleep(2);
@@ -80,11 +71,7 @@ describe('Test setup authentication in REST Server', () => {
   test('If disable auth, route `/auth` should not exists', async () => {
     configs.enableRestAuth = false;
 
-    const server = new ExpressServer(
-      domainRegistry,
-      new RestClientManager(new BSLogger('rest-client-manager-test', {})),
-      new BSLogger('express-server-test', {})
-    );
+    const server = new ExpressServer(domainRegistry, new BSLogger('express-server-test', {}));
 
     const listeningPort = server.startListening();
     await sleep(2);
@@ -121,9 +108,9 @@ describe('Test authentication in REST server', () => {
 
   const server = new ExpressServer(
     domainRegistry,
-    new RestClientManager(new BSLogger('rest-client-manager-test', {})),
     new BSLogger('express-server-test', { level: LogLevel.DEBUG })
   );
+
   let listeningPort: number;
 
   beforeAll((done) => {

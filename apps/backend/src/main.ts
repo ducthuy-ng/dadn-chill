@@ -5,6 +5,7 @@ import express from 'express';
 import path from 'path';
 import { SkipCheck } from './core/domain/LimitChecker/SkipCheck';
 import {
+  ForwardNotificationUseCase,
   GetAllSensorUseCase,
   GetAnalysisDataForSensorUseCase,
   GetSingleSensorUseCase,
@@ -32,11 +33,14 @@ const PGRepo = new PGRepository(
   domainRegistry.configManager.getPGConnectionConfigs(),
   new BSLogger('PGRepo', { level: LogLevel.DEBUG })
 );
+domainRegistry.notificationRepo = PGRepo;
+domainRegistry.sensorRepo = PGRepo;
 
 // const clientManager = new RestClientManager(new BSLogger('RestClientManager', {}));
 const clientManager = new SseClientManager({
   logger: new BSLogger('SseClientManager', {}),
 });
+domainRegistry.clientManager = clientManager;
 
 const sensorController = new MqttSensorController(
   domainRegistry.configManager.getMqttHostname(),
@@ -51,6 +55,7 @@ domainRegistry.subscribeClientUC = new ClientSubscribeUseCase(clientManager);
 domainRegistry.changeClientSubscriptionUC = new ChangeSubscriptionUseCase(clientManager);
 domainRegistry.getTotalStatisticUC = new GetTotalAnalysisDataUseCase(domainRegistry);
 domainRegistry.getAnalysisDataForSensorUC = new GetAnalysisDataForSensorUseCase(domainRegistry);
+domainRegistry.forwardNotificationUC = new ForwardNotificationUseCase(domainRegistry);
 
 domainRegistry.analysisTool = PGRepo;
 
@@ -71,7 +76,7 @@ const eventMQ = new MqttEventMQ(
 );
 eventMQ.onNewEvent(processReadEventUC);
 
-const server = new ExpressServer(domainRegistry, clientManager, new BSLogger('ExpressServer', {}));
+const server = new ExpressServer(domainRegistry, new BSLogger('ExpressServer', {}), clientManager);
 
 server.use('/doc', express.static(path.join(__dirname, 'assets')));
 
