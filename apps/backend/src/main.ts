@@ -27,6 +27,7 @@ import { PGRepository } from './infras/PGRepository';
 import { SseClientManager } from './infras/SseClientManager';
 
 const domainRegistry = new DomainRegistry();
+domainRegistry.logger = new BSLogger('DomainRegistry', { level: LogLevel.DEBUG });
 
 domainRegistry.configManager = new EnvironmentVariablesProcessor(process.env);
 
@@ -96,6 +97,7 @@ async function closingServers() {
   await eventMQ.stopListening();
 }
 
+domainRegistry.listAllUninitializedObjects();
 startServers();
 process.once('SIGINT', closingServers);
 process.once('SIGTERM', closingServers);
