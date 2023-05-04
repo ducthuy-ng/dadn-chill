@@ -32,7 +32,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="flex-grow p-2">
+    <div className="h-full flex-grow p-2">
       <div className="grid h-full grid-cols-5 gap-2">
         <div className="col-span-3 mx-1 flex flex-col">
           <h1 className="m-4 text-3xl font-bold">Cảm biến</h1>

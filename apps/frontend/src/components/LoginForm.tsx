@@ -1,21 +1,22 @@
 import { useState } from 'react';
-import { loginUser } from '../core/services/AuthAdapter';
 
-interface LoginProps {
-  setToken: React.Dispatch<string>;
-}
+import { useAtom } from 'jotai';
+import { userLogin } from '../core/services/store';
+import { AuthAdapter } from '../core/services/AuthAdapter';
+import { http } from '../core/services/httpClient';
+import Login from '../core/application/GetUser';
+import UserDTO from '../core/services/UserDTO';
 
-export default function Login(loginProps: LoginProps) {
+export default function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [, setUser] = useAtom(userLogin);
+
+  const authAdapter = new AuthAdapter(http);
 
   const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
-    const token = await loginUser({
-      email,
-      password,
-    });
-    loginProps.setToken(token);
+    setUser(await new Login(authAdapter, { email, password } as UserDTO).executeUsecase());
   };
 
   return (
