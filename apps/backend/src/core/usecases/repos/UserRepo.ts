@@ -1,7 +1,7 @@
 import { User } from '../../domain/User';
 
 export interface UserRepo {
-  getById(id: string): Promise<User | null>;
+  getByUserId(id: string): Promise<User | null>;
   getByEmail(email: string): Promise<User | null>;
 }
 

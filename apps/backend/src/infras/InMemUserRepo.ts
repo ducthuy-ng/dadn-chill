@@ -15,7 +15,7 @@ export class InMemUserRepo implements UserRepo {
     this.users.set(userThuy.getId(), userThuy);
   }
 
-  async getById(id: string): Promise<User | null> {
+  async getByUserId(id: string): Promise<User | null> {
     const searchUser = this.users.get(id);
     if (!searchUser) {
       return null;

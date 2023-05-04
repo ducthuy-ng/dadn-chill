@@ -327,21 +327,25 @@ export class ExpressServer {
     const email = req.body.email;
     const password = req.body.password;
 
-    const newApiKey = await this.domainRegistry.loginUC.execute(email, password);
-    if (!newApiKey) {
-      next(new InvalidCredential());
-      return;
+    try {
+      const newApiKey = await this.domainRegistry.loginUC.execute(email, password);
+      if (!newApiKey) {
+        next(new InvalidCredential());
+        return;
+      }
+
+      this.assignedApiToken.set(
+        newApiKey,
+        setTimeout(
+          () => this.assignedApiToken.delete(newApiKey),
+          30 * SECONDS_IN_MINUTE * MILLISECONDS_IN_SECOND
+        )
+      );
+
+      res.status(200).setHeader('x-api-key', newApiKey).send();
+    } catch (err) {
+      next(err);
     }
-
-    this.assignedApiToken.set(
-      newApiKey,
-      setTimeout(
-        () => this.assignedApiToken.delete(newApiKey),
-        30 * SECONDS_IN_MINUTE * MILLISECONDS_IN_SECOND
-      )
-    );
-
-    res.status(200).setHeader('x-api-key', newApiKey).send();
   };
 
   private processLogoutRequest: RequestHandler = (req, res, next) => {
