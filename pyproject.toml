@@ -5,7 +5,7 @@ description = ""
 authors = ["Your Name <you@example.com>"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "dadn_chill"}]
+
 
 [tool.poetry.dependencies]
 python = "^3.8"

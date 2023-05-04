@@ -10,6 +10,15 @@ jobs:
     permissions:
       packages: write
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - image: ghcr.io/ducthuy-ng/dadn-chill-backend
+            dockerfile: './apps/backend/Dockerfile'
+          - image: ghcr.io/ducthuy-ng/dadn-chill-ml-server
+            dockerfile: './apps/ML-server/Dockerfile'
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -31,14 +40,14 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ghcr.io/ducthuy-ng/dadn-chill-backend
+          images: ${{ matrix.image }}
           tags: type=semver,pattern={{version}}
 
       - name: Build and push to GHCR
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: './apps/backend/Dockerfile'
+          file: ${{ matrix.dockerfile }}
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}

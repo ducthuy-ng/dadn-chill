@@ -27,9 +27,7 @@ services:
     depends_on:
       - mqtt
       - postgres
-    build:
-      context: .
-      dockerfile: apps/backend/Dockerfile
+    image: ghcr.io/ducthuy-ng/dadn-chill-backend:0.5.0
     ports:
       - '3333:3333'
     networks:
@@ -43,16 +41,29 @@ services:
       - FRONTEND_ENDPOINT=https://cg-monitor.duckdns.org
       - MQTT_HOSTNAME=mqtt://mqtt:1883
 
-  frontend:
+  ml-server:
     depends_on:
+      - mqtt
       - backend
-    ports:
-      - '4200:80'
-    build:
-      context: .
-      dockerfile: apps/frontend/Dockerfile
+    image: ghcr.io/ducthuy-ng/dadn-chill-ml-server:0.5.0
     environment:
-      - VITE_HOST=https://cg-monitor.duckdns.org
+      - MQTT_HOSTNAME=mqtt://mqtt:1883
+      - MQTT_INCOMING_TOPIC=chill-topic
+      - BACKEND_NOTIFICATION_WEBHOOK=http://backend:3333/webhook/notification-webhook
+      - MODEL_FILE_PATH=/app/decision_tree.model
+    networks:
+      - chill-network
+
+  # frontend:
+  #   depends_on:
+  #     - backend
+  #   ports:
+  #     - '4200:80'
+  #   build:
+  #     context: .
+  #     dockerfile: apps/frontend/Dockerfile
+  #   environment:
+  #     - VITE_HOST=https://cg-monitor.duckdns.org
 
 secrets:
   chill_postgres_password:
