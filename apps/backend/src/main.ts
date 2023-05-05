@@ -15,6 +15,7 @@ import {
 import { ChangeSubscriptionUseCase } from './core/usecases/ChangeSubscription';
 import { GetAllNotificationsUseCase } from './core/usecases/GetAllNotifications';
 import { LogLevel } from './core/usecases/Logger';
+import { LoginUseCase } from './core/usecases/Login';
 import { ClientSubscribeUseCase } from './core/usecases/StartClient';
 import { BSLogger } from './infras/BSLogger';
 import { EnvironmentVariablesProcessor } from './infras/ConfigManager/EnvironmentVariable';
@@ -26,6 +27,7 @@ import { PGRepository } from './infras/PGRepository';
 import { SseClientManager } from './infras/SseClientManager';
 
 const domainRegistry = new DomainRegistry();
+domainRegistry.logger = new BSLogger('DomainRegistry', { level: LogLevel.DEBUG });
 
 domainRegistry.configManager = new EnvironmentVariablesProcessor(process.env);
 
@@ -55,8 +57,10 @@ domainRegistry.subscribeClientUC = new ClientSubscribeUseCase(clientManager);
 domainRegistry.changeClientSubscriptionUC = new ChangeSubscriptionUseCase(clientManager);
 domainRegistry.getTotalStatisticUC = new GetTotalAnalysisDataUseCase(domainRegistry);
 domainRegistry.getAnalysisDataForSensorUC = new GetAnalysisDataForSensorUseCase(domainRegistry);
+domainRegistry.loginUC = new LoginUseCase(domainRegistry);
 domainRegistry.forwardNotificationUC = new ForwardNotificationUseCase(domainRegistry);
 
+domainRegistry.userRepo = PGRepo;
 domainRegistry.analysisTool = PGRepo;
 
 domainRegistry.sensorController = sensorController;
@@ -93,6 +97,7 @@ async function closingServers() {
   await eventMQ.stopListening();
 }
 
+domainRegistry.listAllUninitializedObjects();
 startServers();
 process.once('SIGINT', closingServers);
 process.once('SIGTERM', closingServers);

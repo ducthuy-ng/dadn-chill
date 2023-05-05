@@ -1,14 +1,14 @@
 import { LatLngExpression } from 'leaflet';
 
 export type SensorMetadata = {
-  id: string;
+  id: number;
   name: string;
   connected: boolean;
   location: LatLngExpression;
 };
 
 export type SensorTimeSeriesData = {
-  id: string;
+  id: number;
   time: string;
   temperature: number;
   humidity: number;

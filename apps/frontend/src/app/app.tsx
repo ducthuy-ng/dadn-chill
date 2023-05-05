@@ -1,39 +1,38 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
-import { Link, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { Navbar } from '../components';
 import NotificationsPage from '../pages/NotificationsPage';
 import HomePage from '../pages/HomePage';
-import SensorView from '../pages/SensorView';
 import Sidebar from '../components/Sidebar';
-import { sidebar } from '../core/services/store';
+import { getUser, sidebar } from '../core/services/store';
 import { useAtom } from 'jotai';
 import NotFound from '../pages/NotFound';
+import LoginForm from '../components/LoginForm';
+import AnalysisPage from '../pages/AnalysisPage';
 
 export function App() {
   const [show] = useAtom(sidebar);
+  const [user] = useAtom(getUser);
+
+  if (!user || user.id === '') {
+    console.log(user);
+    return <LoginForm />;
+  }
 
   return (
-    <>
+    <div className="login-wrapper">
+      <Navbar />
       <Sidebar />
-      <div className={`flex h-screen flex-col${show ? ' blur' : ''}`}>
-        <Navbar />
+      <div className={`h-screen pt-12 ${show ? ' ml-64' : ''}`}>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
-          <Route path={'/sensor/:sensorId'} element={<SensorView />} />
-          <Route
-            path="/page-2"
-            element={
-              <div>
-                <Link to="/">Click here to go back to root page.</Link>
-              </div>
-            }
-          />
+          <Route path="/analysis" element={<AnalysisPage />} />
           <Route path="/*" element={<NotFound />} />
         </Routes>
       </div>
-    </>
+    </div>
   );
 }
 

@@ -1,11 +1,25 @@
-import { http } from './httpClient';
+import { Http } from './httpClient';
 import { SensorData } from '../domain/Sensor';
-import { AxiosResponse } from 'axios';
+import ISensorDatasource from '../datasource/ISensorListDatasource';
 
-export const fetchPagedSensors = async (page: number, baseURL?: string): Promise<AxiosResponse> => {
-  return await http.get<SensorData[]>('/sensors', { params: { page: page }, baseURL: baseURL });
-};
+export default class SensorAdapter implements ISensorDatasource {
+  private http: Http;
 
-export const fetchSingleSensor = async (id: string, baseURL?: string): Promise<AxiosResponse> => {
-  return await http.get<SensorData>(`/sensors/${id}`, { baseURL: baseURL });
-};
+  public constructor(http: Http) {
+    this.http = http;
+  }
+
+  public getAllSensors = async (page: number): Promise<SensorData[]> => {
+    const response = await this.http.get<SensorData[]>(`/sensors?page=${page}`);
+    return response.data;
+  };
+  public getSensorById = async (id: string): Promise<SensorData> => {
+    const response = await this.http.get<SensorData>(`/sensor/${id}`);
+    return response.data;
+  };
+
+  public healthCheck = async (): Promise<boolean> => {
+    const response = await this.http.get('health-check');
+    return response.status === 200;
+  };
+}

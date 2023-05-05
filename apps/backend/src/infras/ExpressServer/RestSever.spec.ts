@@ -129,6 +129,45 @@ describe('Test /sensors routes', () => {
   });
 });
 
+describe('Test /sensors/:id routes', () => {
+  it('should correctly get sensor 1', async () => {
+    const resp = await axios.get(`http://localhost:${listeningPort}/sensors/1`, {
+      validateStatus: () => true,
+    });
+
+    expect(resp.status).toEqual(200);
+    expect(resp.data).toHaveProperty('id', 1);
+    expect(resp.data).toHaveProperty('name', 'ABC');
+  });
+
+  it('should return 400 if sensor ID is not a correct number', async () => {
+    const resp = await axios.get(`http://localhost:${listeningPort}/sensors/ab`, {
+      validateStatus: () => true,
+    });
+
+    expect(resp.status).toEqual(400);
+    expect(resp.data.name).toEqual('ValidationError');
+  });
+
+  it('should return 400 if sensor ID is not a number, part 2', async () => {
+    const resp = await axios.get(`http://localhost:${listeningPort}/sensors/1ab`, {
+      validateStatus: () => true,
+    });
+
+    expect(resp.status).toEqual(400);
+    expect(resp.data.name).toEqual('ValidationError');
+  });
+
+  it('should return InvalidSensorId if sensor is not exists', async () => {
+    const resp = await axios.get(`http://localhost:${listeningPort}/sensors/3`, {
+      validateStatus: () => true,
+    });
+
+    expect(resp.status).toEqual(400);
+    expect(resp.data.name).toEqual('InvalidSensorId');
+  });
+});
+
 describe('Test /command route', () => {
   test('Simple command send should work', async () => {
     const resp = await axios.post(`http://localhost:${listeningPort}/command`, {

@@ -12,14 +12,14 @@ export class LoginUseCase {
   async execute(email: string, password: string): Promise<string> {
     const userRepo = this.domainRegistry.userRepo;
 
-    const user = await userRepo.getByEmail(email);
-
-    if (!user) {
-      return '';
-    }
-
-    const [salt, hashedStoredPassword] = user.getHashedPassword().split(':');
     try {
+      const user = await userRepo.getByEmail(email);
+      if (!user) {
+        return '';
+      }
+
+      const [salt, hashedStoredPassword] = user.getHashedPassword().split(':');
+
       const inputHashedPassword = scryptSync(password, salt, 64);
       const inputHexPassword = inputHashedPassword.toString('hex');
 
