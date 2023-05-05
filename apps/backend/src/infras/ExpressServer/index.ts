@@ -128,9 +128,7 @@ export class ExpressServer {
     router.use('/notifications', this.AuthenticationMiddleware, this.getNotificationRouter());
 
     router.use('/notification-webhook', this.getNotificationWebhookRouter());
-
     router.post('/command', this.handleCommandRequest);
-    // TODO: router.get<null, SensorDto[] | ErrorMsg>('/sensor/:id', this.handleGetSensorList);
 
     const enableAuth = this.domainRegistry.configManager.getEnableAuthStatus();
     this.logger.debug('enable authentication', enableAuth);
@@ -198,6 +196,13 @@ export class ExpressServer {
       this.handleGetAllSensors
     );
 
+    router.get(
+      '/:id',
+      param('id').isInt().withMessage('Invalid sensor ID for parameter'),
+      this.validateRequest,
+      this.handleGetSingleSensor
+    );
+
     return router;
   }
 
@@ -219,6 +224,24 @@ export class ExpressServer {
       res.set('X-Content-Size', numOfSensor.toString()).json(sensorDtoList);
     } catch (err) {
       next(err);
+    }
+  };
+
+  private handleGetSingleSensor: RequestHandler<{ id: string }> = async (req, res, next) => {
+    const sensorId = parseInt(req.params.id);
+
+    const getSingleSensorUC = this.domainRegistry.getSingleSensorUC;
+
+    try {
+      const selectedSensor = await getSingleSensorUC.execute(sensorId);
+      const selectedSensorDto = GenerateDto(selectedSensor);
+      res.json(selectedSensorDto);
+    } catch (err) {
+      if (err instanceof SensorIdNotFound) {
+        next(new InvalidSensorId(sensorId));
+      } else {
+        next(err);
+      }
     }
   };
 
