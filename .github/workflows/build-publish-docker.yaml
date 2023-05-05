@@ -18,6 +18,8 @@ jobs:
             dockerfile: './apps/backend/Dockerfile'
           - image: ghcr.io/ducthuy-ng/dadn-chill-ml-server
             dockerfile: './apps/ML-server/Dockerfile'
+          - image: ghcr.io/ducthuy-ng/dadn-chill-frontend
+            dockerfile: './apps/frontend/Dockerfile'
 
     steps:
       - name: Checkout

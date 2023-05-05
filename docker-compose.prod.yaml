@@ -22,12 +22,21 @@ services:
       - POSTGRES_PASSWORD=/run/secrets/chill_postgres_password
     networks:
       - backend-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready', '-d', 'backend']
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
 
   backend:
     depends_on:
-      - mqtt
-      - postgres
-    image: ghcr.io/ducthuy-ng/dadn-chill-backend:0.5.0
+      mqtt:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+        restart: true
+    image: ghcr.io/ducthuy-ng/dadn-chill-backend:0.6.0
     ports:
       - '3333:3333'
     networks:
@@ -45,7 +54,7 @@ services:
     depends_on:
       - mqtt
       - backend
-    image: ghcr.io/ducthuy-ng/dadn-chill-ml-server:0.5.0
+    image: ghcr.io/ducthuy-ng/dadn-chill-ml-server:0.6.0
     environment:
       - MQTT_HOSTNAME=mqtt://mqtt:1883
       - MQTT_INCOMING_TOPIC=chill-topic
@@ -54,16 +63,14 @@ services:
     networks:
       - chill-network
 
-  # frontend:
-  #   depends_on:
-  #     - backend
-  #   ports:
-  #     - '4200:80'
-  #   build:
-  #     context: .
-  #     dockerfile: apps/frontend/Dockerfile
-  #   environment:
-  #     - VITE_HOST=https://cg-monitor.duckdns.org
+  frontend:
+    depends_on:
+      - backend
+    image: ghcr.io/ducthuy-ng/dadn-chill-frontend:0.6.0
+    ports:
+      - '4200:80'
+    environment:
+      - VITE_HOST=https://cg-monitor-internal.duckdns.org
 
 secrets:
   chill_postgres_password:
