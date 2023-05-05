@@ -1,17 +1,21 @@
+import axios from 'axios';
+import { useAtom } from 'jotai';
 import moment from 'moment';
+import { useEffect, useState } from 'react';
+import { getUser } from '../core/services/store';
 import {
-  LineChart,
-  Line,
   CartesianGrid,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-  Pie,
-  PieChart,
   Cell,
   Label,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from 'recharts';
 import MapEngine from '../components/Map';
 import { SensorMetadata } from '../core/domain/Sensor';
@@ -23,43 +27,43 @@ const sensor: SensorMetadata = {
   connected: true,
 };
 
-const timeseries = [
-  {
-    temperature: 30,
-    humidity: 51,
-    lux: 67,
-    moist: 59,
-    date: 'Mar 9, 2022, 17:03:00',
-  },
-  {
-    temperature: 28,
-    humidity: 84,
-    lux: 121,
-    moist: 61,
-    date: 'Mar 9, 2022, 17:03:30',
-  },
-  {
-    temperature: 32,
-    humidity: 80,
-    lux: 51,
-    moist: 63,
-    date: 'Mar 9, 2022, 17:04:00',
-  },
-  {
-    temperature: 32,
-    humidity: 88,
-    lux: 128,
-    moist: 67,
-    date: 'Mar 9, 2022, 17:04:30',
-  },
-  {
-    temperature: 27,
-    humidity: 89,
-    lux: 101,
-    moist: 70,
-    date: 'Mar 9, 2022, 17:05:00',
-  },
-];
+// const timeseries = [
+//   {
+//     temperature: 30,
+//     humidity: 51,
+//     lux: 67,
+//     moist: 59,
+//     date: 'Mar 9, 2022, 17:03:00',
+//   },
+//   {
+//     temperature: 28,
+//     humidity: 84,
+//     lux: 121,
+//     moist: 61,
+//     date: 'Mar 9, 2022, 17:03:30',
+//   },
+//   {
+//     temperature: 32,
+//     humidity: 80,
+//     lux: 51,
+//     moist: 63,
+//     date: 'Mar 9, 2022, 17:04:00',
+//   },
+//   {
+//     temperature: 32,
+//     humidity: 88,
+//     lux: 128,
+//     moist: 67,
+//     date: 'Mar 9, 2022, 17:04:30',
+//   },
+//   {
+//     temperature: 27,
+//     humidity: 89,
+//     lux: 101,
+//     moist: 70,
+//     date: 'Mar 9, 2022, 17:05:00',
+//   },
+// ];
 
 const noti = [
   { name: 'Mất kết nối', value: 4 },
@@ -70,6 +74,35 @@ const noti = [
 const COLORS = ['#0088FE', '#FF8042', '#00C49F'];
 
 export default function AnalysisPage() {
+  const backendLocation = import.meta.env.VITE_HOST;
+  const [user] = useAtom(getUser);
+
+  const [analysisData, setAnalysisData] = useState({
+    temperatureHistory: [],
+    humidityHistory: [],
+    lightIntensityHistory: [],
+    earthMoistureHistory: [],
+  });
+
+  useEffect(() => {
+    axios
+      .post(
+        `${backendLocation}/statistics`,
+        {
+          startDate: '2023-03-10',
+          endDate: '2023-03-14',
+        },
+        {
+          headers: {
+            'x-api-key': user.id,
+          },
+        }
+      )
+      .then((resp) => {
+        setAnalysisData(resp.data);
+      });
+  }, [backendLocation, user.id]);
+
   return (
     <div className="p-4 ">
       <div className="flex justify-between p-2">
@@ -84,12 +117,12 @@ export default function AnalysisPage() {
               <LineChart
                 width={480}
                 height={300}
-                data={timeseries}
+                data={analysisData['temperatureHistory']}
                 margin={{ top: 50, left: 0, right: 50, bottom: 0 }}
               >
                 <XAxis
-                  dataKey="date"
-                  tickFormatter={(unixTime) => moment(new Date(unixTime)).format('HH:mm:ss')}
+                  dataKey="day"
+                  tickFormatter={(unixTime) => moment(new Date(unixTime)).format('YYYY-MM-DD')}
                   tick={{ fontSize: ' 0.7rem' }}
                   domain={['auto', 'auto']}
                   name="Thời gian"
@@ -107,12 +140,12 @@ export default function AnalysisPage() {
               <LineChart
                 width={480}
                 height={300}
-                data={timeseries}
+                data={analysisData['humidityHistory']}
                 margin={{ top: 50, left: 0, right: 50, bottom: 0 }}
               >
                 <XAxis
-                  dataKey="date"
-                  tickFormatter={(unixTime) => moment(new Date(unixTime)).format('HH:mm:ss')}
+                  dataKey="day"
+                  tickFormatter={(unixTime) => moment(new Date(unixTime)).format('YYYY-MM-DD')}
                   domain={['auto', 'auto']}
                   name="Thời gian"
                   tick={{ fontSize: ' 0.7rem' }}
@@ -126,10 +159,6 @@ export default function AnalysisPage() {
               </LineChart>
             </ResponsiveContainer>
           </div>
-
-          {/* <div className="col-span-1 pl-1">
-              
-            </div> */}
         </div>
 
         <div className="col-span-2 grid h-full grid-rows-2 gap-2">
@@ -142,19 +171,19 @@ export default function AnalysisPage() {
               <LineChart
                 width={480}
                 height={300}
-                data={timeseries}
+                data={analysisData['lightIntensityHistory']}
                 margin={{ top: 50, left: 0, right: 50, bottom: 0 }}
               >
                 <XAxis
-                  dataKey="date"
-                  tickFormatter={(unixTime) => moment(new Date(unixTime)).format('HH:mm:ss')}
+                  dataKey="day"
+                  tickFormatter={(unixTime) => moment(new Date(unixTime)).format('YYYY-MM-DD')}
                   domain={['auto', 'auto']}
                   name="Thời gian"
                   tick={{ fontSize: ' 0.7rem' }}
                 />
                 <YAxis tick={{ fontSize: ' 0.7rem' }} />
                 <CartesianGrid strokeDasharray="3 3" />
-                <Line type="monotone" dataKey="lux" stroke="#f48c06" strokeWidth={2} />
+                <Line type="monotone" dataKey="lightIntensity" stroke="#f48c06" strokeWidth={2} />
                 <Legend verticalAlign="bottom" height={36} />
                 <Tooltip />
               </LineChart>
