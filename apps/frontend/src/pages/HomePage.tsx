@@ -45,8 +45,6 @@ export default function HomePage() {
     };
   }, [clientId]);
 
-
-
   const handleClickOnMap = (position: LatLngExpression): void => {
     if (map === null) return;
     map.setView(position, zoom);

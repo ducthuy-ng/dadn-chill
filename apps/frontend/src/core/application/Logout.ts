@@ -1,5 +1,5 @@
-import IUserDatasource from "../datasource/IUserDatasource";
-import IUsecase from "./IUsecase";
+import IUserDatasource from '../datasource/IUserDatasource';
+import IUsecase from './IUsecase';
 
 export default class Logout implements IUsecase<void> {
   private dataSource: IUserDatasource;
@@ -9,8 +9,8 @@ export default class Logout implements IUsecase<void> {
   }
 
   public executeUsecase = async (): Promise<void> => {
-    await this.dataSource.logout()
-    sessionStorage.removeItem("accessToken")
-    sessionStorage.removeItem("email")
+    await this.dataSource.logout();
+    sessionStorage.removeItem('accessToken');
+    sessionStorage.removeItem('email');
   };
 }
