@@ -4,20 +4,20 @@ import IUsecase from './IUsecase';
 import IUserDatasource from '../datasource/IUserDatasource';
 
 export default class Login implements IUsecase<User> {
-  private _dataSource: IUserDatasource;
-  private _userDTO: UserDTO;
+  private dataSource: IUserDatasource;
+  private userDTO: UserDTO;
 
   public constructor(dataSource: IUserDatasource, userDTO: UserDTO) {
-    this._dataSource = dataSource;
-    this._userDTO = userDTO;
+    this.dataSource = dataSource;
+    this.userDTO = userDTO;
   }
 
   public executeUsecase = async (): Promise<User> => {
-    const id = await this._dataSource.login(this._userDTO);
+    const id = await this.dataSource.login(this.userDTO);
 
     return {
       id: id,
-      email: this._userDTO.email,
+      email: this.userDTO.email,
       name: '',
     } as User;
   };

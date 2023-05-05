@@ -1,29 +1,64 @@
 import { LatLngExpression, Map } from 'leaflet';
-import { useEffect, useState } from 'react';
-import { FaCaretLeft, FaCaretRight, FaEye } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
 import MapEngine from '../components/Map';
 import { SensorData } from '../core/domain/Sensor';
-import { fetchPagedSensors } from '../core/services/SensorAdapter';
+import GetAllSensors from '../core/application/GetAllSensors';
+import { http } from '../core/services/httpClient';
+import SensorAdapter from '../core/services/SensorAdapter';
+import SSE from '../core/services/SseClient';
+import GetClientId from '../core/application/StreamSensorList';
+import ReadEventAdapter from '../core/services/ReadEventAdapter';
 
 export default function HomePage() {
-  const [sensorDummyData, getData] = useState<SensorData[]>([]);
+  const [page] = useState(1);
+  const [sensor, setData] = useState<SensorData[]>([]);
+  const [clientId, setClientId] = useState('');
+
+  useMemo(() => {
+    const sensorAdapter = new SensorAdapter(http);
+    new GetAllSensors(sensorAdapter, page).executeUsecase().then((result) => setData(result));
+  }, [page]);
+
+  useMemo(() => {
+    const sensorIds = sensor.map((e) => e.id);
+    new GetClientId(new ReadEventAdapter(http), sensorIds)
+      .executeUsecase()
+      .then((result) => setClientId(result));
+  }, [sensor]);
+
   const [map, setMap] = useState<Map | null>(null);
   const zoom = 13;
 
   useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const response = await fetchPagedSensors(1);
-        const data = await response.data;
-        getData(data);
-      } catch (error) {
-        console.log('An error occurred');
-        clearInterval(interval);
-      }
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
+    if (clientId === '') return;
+    const sse = new SSE(clientId);
+    function getRealtimeData(data: SensorData[]) {
+      setData(data);
+    }
+    sse.eventSource.onmessage = (e) => getRealtimeData(JSON.parse(e.data));
+    sse.eventSource.onerror = () => {
+      // error log here
+      console.log('error');
+      sse.eventSource.close();
+    };
+    return () => {
+      sse.eventSource.close();
+    };
+  }, [clientId]);
+
+  // useEffect(() => {
+  //   const interval = setInterval(async () => {
+  //     try {
+  //       const response = await fetchPagedSensors(1);
+  //       const data = await response.data;
+  //       getData(data);
+  //     } catch (error) {
+  //       console.log('An error occurred');
+  //       clearInterval(interval);
+  //     }
+  //   }, 2000);
+  //   return () => clearInterval(interval);
+  // }, []);
 
   const handleClickOnMap = (position: LatLngExpression): void => {
     if (map === null) return;
@@ -49,8 +84,8 @@ export default function HomePage() {
               </tr>
             </thead>
             <tbody>
-              {sensorDummyData.length !== 0
-                ? sensorDummyData.map((sensorData) => (
+              {sensor.length !== 0
+                ? sensor.map((sensorData) => (
                     <tr
                       key={sensorData.id}
                       className="cursor-pointer border-b-2 hover:bg-gray-100"
@@ -68,11 +103,6 @@ export default function HomePage() {
                       <td className="py-2 text-center">{sensorData.humidity}</td>
                       <td className="py-2 text-center">{sensorData.lux}</td>
                       <td className="py-2 text-center">{sensorData.moist}</td>
-                      <td className="py-2 text-center">
-                        <Link to={`/sensor/${sensorData.id}`}>
-                          <FaEye />
-                        </Link>
-                      </td>
                     </tr>
                   ))
                 : Array.from({ length: 10 }).map((value, id) => (
@@ -104,7 +134,7 @@ export default function HomePage() {
                   ))}
             </tbody>
           </table>
-          <div className="my-4 flex w-full flex-row justify-end gap-10">
+          {/* <div className="my-4 flex w-full flex-row justify-end gap-10">
             <div className="flex flex-row gap-2">
               <span>Trang thứ</span>
               <span className="w-4 border-b-2 border-black text-center">2</span>
@@ -113,13 +143,13 @@ export default function HomePage() {
               <FaCaretLeft className="mx-2 h-full cursor-pointer" />
               <FaCaretRight className="mx-2 h-full cursor-pointer" />
             </div>
-          </div>
+          </div> */}
         </div>
         <div className="relative col-span-2 mx-1 h-full rounded-md">
           <MapEngine
             className="z-0 h-full"
             setMap={setMap}
-            data={sensorDummyData.map((el) => ({
+            data={sensor.map((el) => ({
               id: el.id,
               name: el.name,
               connected: el.connected,

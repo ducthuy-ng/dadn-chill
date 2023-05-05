@@ -4,9 +4,8 @@ import { Route, Routes } from 'react-router-dom';
 import { Navbar } from '../components';
 import NotificationsPage from '../pages/NotificationsPage';
 import HomePage from '../pages/HomePage';
-import SensorView from '../pages/SensorView';
 import Sidebar from '../components/Sidebar';
-import { getToken, sidebar } from '../core/services/store';
+import { getUser, sidebar } from '../core/services/store';
 import { useAtom } from 'jotai';
 import NotFound from '../pages/NotFound';
 import LoginForm from '../components/LoginForm';
@@ -14,9 +13,10 @@ import AnalysisPage from '../pages/AnalysisPage';
 
 export function App() {
   const [show] = useAtom(sidebar);
-  const [token] = useAtom(getToken);
+  const [user] = useAtom(getUser);
 
-  if (!token) {
+  if (!user || user.id === '') {
+    console.log(user);
     return <LoginForm />;
   }
 
@@ -27,9 +27,8 @@ export function App() {
       <div className={`h-screen pt-12 ${show ? ' ml-64' : ''}`}>
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/noti" element={<NotificationsPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/analysis" element={<AnalysisPage />} />
-          <Route path={'/sensor/:sensorId'} element={<SensorView />} />
           <Route path="/*" element={<NotFound />} />
         </Routes>
       </div>

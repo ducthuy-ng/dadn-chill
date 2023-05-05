@@ -342,7 +342,11 @@ export class ExpressServer {
         )
       );
 
-      res.status(200).setHeader('x-api-key', newApiKey).send();
+      res
+        .status(200)
+        .setHeader('Access-Control-Expose-Headers', 'x-api-key')
+        .setHeader('x-api-key', newApiKey)
+        .send();
     } catch (err) {
       next(err);
     }

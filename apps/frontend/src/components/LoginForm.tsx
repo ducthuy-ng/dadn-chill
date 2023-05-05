@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
 import { useAtom } from 'jotai';
-import { userLogin } from '../core/services/store';
-import { AuthAdapter } from '../core/services/AuthAdapter';
+import { getUser } from '../core/services/store';
+import AuthAdapter from '../core/services/AuthAdapter';
 import { http } from '../core/services/httpClient';
 import Login from '../core/application/GetUser';
 import UserDTO from '../core/services/UserDTO';
@@ -10,7 +10,7 @@ import UserDTO from '../core/services/UserDTO';
 export default function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [, setUser] = useAtom(userLogin);
+  const [, setUser] = useAtom(getUser);
 
   const authAdapter = new AuthAdapter(http);
 
