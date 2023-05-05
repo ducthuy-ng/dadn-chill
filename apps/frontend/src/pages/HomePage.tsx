@@ -30,7 +30,6 @@ export default function HomePage() {
   const zoom = 13;
 
   useEffect(() => {
-    if (clientId === '') return;
     const sse = new SSE(clientId);
     function getRealtimeData(data: SensorData[]) {
       setData(data);
@@ -46,19 +45,7 @@ export default function HomePage() {
     };
   }, [clientId]);
 
-  // useEffect(() => {
-  //   const interval = setInterval(async () => {
-  //     try {
-  //       const response = await fetchPagedSensors(1);
-  //       const data = await response.data;
-  //       getData(data);
-  //     } catch (error) {
-  //       console.log('An error occurred');
-  //       clearInterval(interval);
-  //     }
-  //   }, 2000);
-  //   return () => clearInterval(interval);
-  // }, []);
+
 
   const handleClickOnMap = (position: LatLngExpression): void => {
     if (map === null) return;

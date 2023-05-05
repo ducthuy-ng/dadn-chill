@@ -17,4 +17,10 @@ export default class SensorAdapter implements ISensorDatasource {
     const response = await this.http.get<SensorData>(`/sensor/${id}`);
     return response.data;
   };
+
+  public healthCheck =  async (): Promise<boolean> => {
+    const response = await this.http.get('health-check')
+    return response.status === 200
+  }
+
 }

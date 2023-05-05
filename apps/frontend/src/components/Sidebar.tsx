@@ -1,8 +1,16 @@
 import { useAtom } from 'jotai';
 import { sidebar } from '../core/services/store';
+import AuthAdapter from '../core/services/AuthAdapter';
+import { http } from '../core/services/httpClient';
+import Logout from '../core/application/Logout';
 
 export default function Sidebar() {
   const [show] = useAtom(sidebar);
+
+  const handleLogout = () => {
+    new Logout(new AuthAdapter(http)).executeUsecase().then(result => console.log(result))
+  }
+
   return (
     <div
       className={`fixed top-0 left-0 z-40 h-screen w-64 overflow-y-auto bg-white p-4 transition-transform dark:bg-gray-800 ${
@@ -94,8 +102,8 @@ export default function Sidebar() {
             </a>
           </li>
           <li>
-            <a
-              href="/"
+            <a href='/'
+              onClick={handleLogout}
               className="flex items-center rounded-lg p-2 text-base font-normal text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
             >
               <svg
